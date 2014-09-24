@@ -1,0 +1,22 @@
+trackthisforme = https://www.trackthisfor.me/oauth/authorize/a07b767ed3d80ee985d1f3da2bb53906a991acaa402af8d9b407fd922cb59e9b
+
+https://www.trackthisfor.me/oauth/token?client_id=aa726770208f92e9e3e89f0348b3796b72eb80a27cde3a22a7145bf582ae407a&redirect_uri=urn:ietf:wg:oauth:2.0:oob&client_secret=bcfc24a09deb4ff154729944c40503327fd77adfaa208d9ebc0069055a308530&code=a63ad8647edcf8ad7b264186cdb87f6edd2c34406439c116f857cf8a17ad167d&grant_type=authorization_code
+
+{"access_token":"fcc72d1e11858cdce96783033c1f5af46185eec78d9233a8161b05845671e943","token_type":"bearer","expires_in":null,"refresh_token":null,"scope":"read"}
+
+//categories
+https://www.trackthisfor.me/api/v1/categories.json?access_token=fcc72d1e11858cdce96783033c1f5af46185eec78d9233a8161b05845671e943
+
+
+//moves
+
+lTEv80sAxRl74OVytdpavkbBcF3ixL5ultzFEsNReqiRw_25vqJs6g80DLInd6E5
+
+https://api.moves-app.com/oauth/v1/access_token?grant_type=authorization_code&code=lTEv80sAxRl74OVytdpavkbBcF3ixL5ultzFEsNReqiRw_25vqJs6g80DLInd6E5&client_id=iSVzU3IrtGiDCD76MFn40byYA454eLa8&client_secret=1VlzQ3sZ4YXj73T3MJVfcJQhHuauD2R8yXGTo_OxYn0d_CjirjKrAbqTt4GUT8KT
+
+
+"access_token": "D165qY4W0Z_wWg102GZ8OtYb95qHi512VZEjViwjh4U8snvIJH4Tl9Lw7fST68uz",
+    "token_type": "bearer",
+    "expires_in": 15551999,
+    "refresh_token": "g1rJp7ivdEh3_s6v_Yxn1vmDvIn4N6Bd_L3iFgv1jCZOrK27hjay53VKn6YHHApE",
+    "user_id": 3436009065118740
