@@ -27,7 +27,6 @@ type (
 	Config struct {
 		Auth   string `json:"auth"`
 		Upload string `json:"upload"`
-		Acct   string `json:"acct"`
 	}
 )
 
