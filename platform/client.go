@@ -84,6 +84,6 @@ func (tc *PlatformClient) LoadInto(data []interface{}) error {
 	return nil
 }
 
-func (tc *PlatformClient) LoadFrom(userid string) (*[]interface{}, error) {
+func (tc *PlatformClient) LoadFrom(userid string) ([]interface{}, error) {
 	return nil, nil
 }

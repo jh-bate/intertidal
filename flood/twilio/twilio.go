@@ -36,7 +36,7 @@ type (
 		config    Config
 		raw       []TextData
 		processed []interface{}
-		store     *store.BoltClient
+		store     store.Client
 	}
 	TextData struct {
 		text, date, device string
@@ -84,7 +84,7 @@ func newTextData(text, date, device string) TextData {
 	}
 }
 
-func (c *Client) Init(config interface{}, store *store.BoltClient) {
+func (c *Client) Init(config interface{}, store store.Client) {
 	c.config = config.(Config)
 	c.store = store
 }
@@ -174,7 +174,7 @@ func (c *Client) StashLocal() {
 	return
 }
 
-func (c *Client) StorePlatform(platform *platform.PlatformClient) {
+func (c *Client) StorePlatform(platform platform.Client) {
 
 	if len(c.processed) > 0 {
 

@@ -29,7 +29,7 @@ type (
 		config    Config
 		raw       []TrackThisEntries
 		processed []interface{}
-		store     *store.BoltClient
+		store     store.Client
 	}
 
 	Config struct {
@@ -57,7 +57,7 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) Init(config interface{}, store *store.BoltClient) {
+func (c *Client) Init(config interface{}, store store.Client) {
 
 	c.config = config.(Config)
 	c.store = store
@@ -109,7 +109,7 @@ func (c *Client) StashLocal() {
 	return
 }
 
-func (c *Client) StorePlatform(platform *platform.PlatformClient) {
+func (c *Client) StorePlatform(platform platform.Client) {
 
 	if len(c.processed) > 0 {
 
