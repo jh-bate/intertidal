@@ -18,7 +18,7 @@ type (
 
 const (
 	//Available Sources
-	SourceTwilio    Source = "twilio"
+	SourceSms       Source = "sms"
 	SourceTrackThis Source = "trackthis"
 
 	NotificationEmail Notification = "email"
@@ -48,7 +48,7 @@ func (a *Api) RegisterSource(res http.ResponseWriter, req *http.Request, vars ma
 	id := vars["userid"]
 	theType := vars["type"]
 
-	if theType == string(SourceTwilio) || theType == string(SourceTrackThis) {
+	if theType == string(SourceSms) || theType == string(SourceTrackThis) {
 		key := req.URL.Query().Get("key")
 
 		if id == "" || key == "" {

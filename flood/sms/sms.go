@@ -1,4 +1,4 @@
-package twilio
+package sms
 
 import (
 	"encoding/json"
@@ -32,11 +32,16 @@ const (
 )
 
 type (
+	ApiClient interface {
+		Configure(config interface{}) error
+		Send(sms string) error
+		Recieve(account string) ([]interface{}, error)
+	}
 	Client struct {
 		config    Config
 		raw       []TextData
 		processed []interface{}
-		store     store.Client
+		api       ApiClient
 	}
 	TextData struct {
 		text, date, device string
@@ -84,12 +89,17 @@ func newTextData(text, date, device string) TextData {
 	}
 }
 
-func (c *Client) Init(config interface{}, store store.Client) {
+func (c *Client) Init(config interface{}) *Client {
 	c.config = config.(Config)
-	c.store = store
+	return c
 }
 
-func (c *Client) Load() {
+func (c *Client) AttachApi(api ApiClient) *Client {
+	c.api = api
+	return c
+}
+
+func (c *Client) Load() *Client {
 
 	log.Println("loading from twilio")
 
@@ -107,11 +117,11 @@ func (c *Client) Load() {
 		}
 	}
 	c.transform()
-	return
+	return c
 }
 
 func (c *Client) transform() {
-	log.Println("transform text from twilio")
+	log.Println("transform text from sms client")
 
 	for i := range c.raw {
 
@@ -155,26 +165,27 @@ func (c *Client) transform() {
 			}
 		}
 	}
+	return
 }
 
-func (c *Client) StashLocal() {
+func (c *Client) StashLocal(local store.Client) *Client {
 
 	if len(c.processed) > 0 {
 
 		log.Printf("to stash: [%v]", c.processed)
 
-		err := c.store.StoreData("999", c.processed)
+		err := local.StoreData("999", c.processed)
 
 		if err != nil {
 			log.Println("Error statshing data ", err)
 		}
-		return
+		return c
 	}
 	log.Println("No data to stash")
-	return
+	return c
 }
 
-func (c *Client) StorePlatform(platform platform.Client) {
+func (c *Client) StorePlatform(platform platform.Client) *Client {
 
 	if len(c.processed) > 0 {
 
@@ -185,4 +196,5 @@ func (c *Client) StorePlatform(platform platform.Client) {
 		}
 	}
 	log.Println("No data to send to the platform")
+	return c
 }

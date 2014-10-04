@@ -29,7 +29,6 @@ type (
 		config    Config
 		raw       []TrackThisEntries
 		processed []interface{}
-		store     store.Client
 	}
 
 	Config struct {
@@ -57,13 +56,12 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) Init(config interface{}, store store.Client) {
-
+func (c *Client) Init(config interface{}) *Client {
 	c.config = config.(Config)
-	c.store = store
+	return c
 }
 
-func (c *Client) Load() {
+func (c *Client) Load() *Client {
 
 	log.Println("loading from trackthisforme.com ...")
 
@@ -91,25 +89,25 @@ func (c *Client) Load() {
 		}
 	}
 	c.transform()
-	return
+	return c
 }
 
-func (c *Client) StashLocal() {
+func (c *Client) StashLocal(local store.Client) *Client {
 
 	if len(c.processed) > 0 {
 
-		err := c.store.StoreData("123", c.processed)
+		err := local.StoreData("123", c.processed)
 
 		if err != nil {
 			log.Println("Error statshing data ", err)
 		}
-		return
+		return c
 	}
 	log.Println("No data to stash")
-	return
+	return c
 }
 
-func (c *Client) StorePlatform(platform platform.Client) {
+func (c *Client) StorePlatform(platform platform.Client) *Client {
 
 	if len(c.processed) > 0 {
 
@@ -118,8 +116,10 @@ func (c *Client) StorePlatform(platform platform.Client) {
 		if err != nil {
 			log.Println("Error sending to platform ", err)
 		}
+		return c
 	}
 	log.Println("No data to send to the platform")
+	return c
 }
 
 func (c *Client) loadCategory(categoryId string) TrackThisEntries {
