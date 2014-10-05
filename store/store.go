@@ -5,8 +5,10 @@ package store
  */
 type Client interface {
 	Ping() error
-	StoreData(key string, data []interface{}) error
-	RetrieveData(key string) ([]interface{}, error)
+	StoreUser(key, token string) error
+	RetrieveUser(key string) ([]interface{}, error)
+	StoreUserData(usr string, data []interface{}) error
+	RetrieveUserData(usr string) ([]interface{}, error)
 	StoreConfig(key string, data []interface{}) error
 	RetrieveConfig(key string) ([]interface{}, error)
 }

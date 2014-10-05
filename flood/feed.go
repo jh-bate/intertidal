@@ -8,6 +8,6 @@ import (
 type Feed interface {
 	Init(config interface{}) *Feed
 	Load() *Feed
-	StashLocal(local store.Client) *Feed
+	StashLocal(key string, local store.Client) *Feed
 	StorePlatform(platform platform.Client) *Feed
 }

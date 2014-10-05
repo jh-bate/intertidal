@@ -92,11 +92,11 @@ func (c *Client) Load() *Client {
 	return c
 }
 
-func (c *Client) StashLocal(local store.Client) *Client {
+func (c *Client) StashLocal(key string, local store.Client) *Client {
 
 	if len(c.processed) > 0 {
 
-		err := local.StoreData("123", c.processed)
+		err := local.StoreUserData(key, c.processed)
 
 		if err != nil {
 			log.Println("Error statshing data ", err)

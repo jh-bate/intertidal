@@ -168,13 +168,13 @@ func (c *Client) transform() {
 	return
 }
 
-func (c *Client) StashLocal(local store.Client) *Client {
+func (c *Client) StashLocal(key string, local store.Client) *Client {
 
 	if len(c.processed) > 0 {
 
 		log.Printf("to stash: [%v]", c.processed)
 
-		err := local.StoreData("999", c.processed)
+		err := local.StoreUserData(key, c.processed)
 
 		if err != nil {
 			log.Println("Error statshing data ", err)

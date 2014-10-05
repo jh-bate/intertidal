@@ -6,6 +6,8 @@ import (
 	"errors"
 	"log"
 	"net/http"
+
+	"github.com/jh-bate/intertidal/store"
 )
 
 const (
@@ -16,13 +18,14 @@ type (
 	Client interface {
 		login(usr, pw string) (string, error)
 		LoadInto(data []interface{}) error
+		StashUserLocal(local store.Client)
 		LoadFrom(userid string) ([]interface{}, error)
 	}
 	PlatformClient struct {
 		config     *Config
 		token      string
 		httpClient *http.Client
-		user       []map[string]string
+		User       string
 	}
 	Config struct {
 		Auth   string `json:"auth"`
@@ -30,17 +33,27 @@ type (
 	}
 )
 
-func NewClient(cfg *Config, usr, pw string) (*PlatformClient, error) {
+func NewClient(cfg *Config, usr, pw string) *PlatformClient {
 
 	client := &PlatformClient{config: cfg, httpClient: &http.Client{}}
 
 	if tkn, err := client.login(usr, pw); err != nil {
-		log.Println("Error init client: ", err)
-		return nil, err
+		log.Panicf("Error init client: ", err)
+		return nil
 	} else {
-		//log.Println("here it is ", tkn)
 		client.token = tkn
-		return client, nil
+		client.User = usr
+		log.Printf("user [%v]", client.User)
+		return client
+	}
+}
+
+func (c *PlatformClient) StashUserLocal(local store.Client) {
+
+	err := local.StoreUser(c.User, c.token)
+
+	if err != nil {
+		log.Println("Error statshing data ", err)
 	}
 }
 

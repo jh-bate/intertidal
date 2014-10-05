@@ -17,14 +17,14 @@ func loadFromSms(token string, stash *store.BoltClient) {
 
 	lt.Init(sms.Config{AuthToken: token, AccountSid: token}).
 		Load().
-		StashLocal(stash)
+		StashLocal("test", stash)
 }
 
 func loadFromTrackThis(token string, stash *store.BoltClient) {
 	log.Println("load from trackthis")
 
 	tt := trackthis.NewClient()
-	p, _ := platform.NewClient(
+	p := platform.NewClient(
 		&platform.Config{
 			Auth:   "http://localhost:8009/auth/login",
 			Upload: "http://localhost:9122/data",
@@ -33,10 +33,12 @@ func loadFromTrackThis(token string, stash *store.BoltClient) {
 		"blip4life",
 	)
 
+	p.StashUserLocal(stash)
+
 	tt.Init(trackthis.Config{AuthToken: token}).
 		Load().
 		StorePlatform(p).
-		StashLocal(stash)
+		StashLocal(p.User, stash)
 }
 
 func main() {
