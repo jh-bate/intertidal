@@ -20,14 +20,14 @@ type (
 		LoadInto(data []interface{}) error
 		login(usr, pw string) (string, error)
 		Profile(name string) error
-		Signup(name, pw, contact string) (User, error)
+		Signup(name, pw, contact string) error
 		StashUserLocal(local store.Client)
 	}
 	PlatformClient struct {
 		config     *Config
 		token      string
 		httpClient *http.Client
-		usr        User
+		User       *User
 	}
 	User struct {
 		Token   string `json:"-"`
@@ -54,8 +54,7 @@ func NewClient(cfg *Config, usrName, pw string) *PlatformClient {
 		log.Panicf("Error init client: ", err)
 		return nil
 	} else {
-		usr := &User{Token: tkn, Name: usrName}
-		client.User = usr
+		client.User = &User{Token: tkn, Name: usrName}
 		log.Printf("user [%v]", client.User)
 		return client
 	}
@@ -63,7 +62,7 @@ func NewClient(cfg *Config, usrName, pw string) *PlatformClient {
 
 func (c *PlatformClient) StashUserLocal(local store.Client) {
 
-	err := local.StoreUser(c.usr.Id, c.usr.Token)
+	err := local.StoreUser(c.User.Token, c.User.Name)
 
 	if err != nil {
 		log.Println("Error statshing data ", err)
@@ -109,7 +108,7 @@ func (tc *PlatformClient) Signup(name, pw, contact string) error {
 
 		newUsr.Id = signup.id
 		newUsr.Token = resp.Header.Get(TP_SESSION_TOKEN)
-		tc.usr = newUsr
+		tc.User = newUsr
 
 		if err := tc.Profile(name); err != nil {
 			log.Println("Error adding profile for newly signedup user")
@@ -121,7 +120,7 @@ func (tc *PlatformClient) Signup(name, pw, contact string) error {
 
 func (tc *PlatformClient) Profile(name string) error {
 
-	var profile struct {
+	type profile struct {
 		FullName string `json:"fullName"`
 	}
 
@@ -138,7 +137,7 @@ func (tc *PlatformClient) Profile(name string) error {
 	} else {
 
 		if resp.StatusCode == http.StatusOK {
-			tc.usr.Profile.FullName = name
+			tc.User.Profile.FullName = name
 		} else {
 			log.Printf("Issue adding profile [%s] [%s]", resp.StatusCode, resp.Status)
 		}
@@ -155,7 +154,7 @@ func (tc *PlatformClient) LoadInto(data []interface{}) error {
 	//log.Println(" token ", tc.token)
 
 	req, _ := http.NewRequest("POST", tc.config.Upload, bytes.NewBufferString(string(jsonBlock)))
-	req.Header.Add(TP_SESSION_TOKEN, tc.token)
+	req.Header.Add(TP_SESSION_TOKEN, tc.User.Token)
 	req.Header.Set("content-type", "application/json")
 
 	if resp, err := tc.httpClient.Do(req); err != nil {
@@ -164,8 +163,8 @@ func (tc *PlatformClient) LoadInto(data []interface{}) error {
 	} else {
 		log.Printf("all good? [%d] [%s] ", resp.StatusCode, resp.Status)
 		updatedToken := resp.Header.Get(TP_SESSION_TOKEN)
-		if updatedToken != "" && tc.token != updatedToken {
-			tc.token = updatedToken
+		if updatedToken != "" && tc.User.Token != updatedToken {
+			tc.User.Token = updatedToken
 			log.Println("updated the token")
 		}
 	}

@@ -26,8 +26,8 @@ func loadFromTrackThis(token string, stash *store.BoltClient) {
 	tt := trackthis.NewClient()
 	p := platform.NewClient(
 		&platform.Config{
-			Auth:   "http://localhost:8009/auth/login",
-			Upload: "http://localhost:9122/data",
+			Auth:   "https://staging-api.tidepool.io/auth",
+			Upload: "https://staging-uploads.tidepool.io/data",
 		},
 		"jamie@tidepool.org",
 		"blip4life",
@@ -38,7 +38,7 @@ func loadFromTrackThis(token string, stash *store.BoltClient) {
 	tt.Init(trackthis.Config{AuthToken: token}).
 		Load().
 		StorePlatform(p).
-		StashLocal(p.User, stash)
+		StashLocal(p.User.Token, stash)
 }
 
 func main() {

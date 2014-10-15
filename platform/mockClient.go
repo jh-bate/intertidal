@@ -7,6 +7,7 @@ import (
 type (
 	MockClient struct {
 		token string
+		User  *User
 	}
 )
 
@@ -27,8 +28,9 @@ func (mock *MockClient) login(usr, pw string) (token string, err error) {
 	return "fairy.dust.as.a.token", nil
 }
 
-func (mock *MockClient) Signup(name, pw, contact string) (User, error) {
-	return &User{Name: name, Contact: contact, Id: "123.456.777", Token: mock.token}, nil
+func (mock *MockClient) Signup(name, pw, contact string) error {
+	mock.User = &User{Name: name, Contact: contact, Id: "123.456.777", Token: mock.token}
+	return nil
 }
 
 func (mock *MockClient) LoadInto(data *[]interface{}) error {
