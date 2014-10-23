@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/jh-bate/intertidal/store"
+	"github.com/jh-bate/intertidal/backend/store"
 )
 
 const (
@@ -44,44 +44,11 @@ type (
 		Auth   string `json:"auth"`
 		Upload string `json:"upload"`
 	}
-
-	Common struct {
-		Type     string `json:"type"`
-		DeviceId string `json:"deviceId"`
-		Source   string `json:"source"`
-		Time     string `json:"time"`
-	}
-	BgEvent struct {
-		Common
-		Value float64 `json:"value"`
-	}
-	FoodEvent struct {
-		Common
-		Carbs float64 `json:"carbs"`
-	}
-	BasalEvent struct {
-		Common
-		DeliveryType string  `json:"deliveryType"`
-		Value        float64 `json:"value"`
-		Duration     int     `json:"duration"`
-		Insulin      string  `json:"insulin"`
-	}
-	BolusEvent struct {
-		Common
-		SubType string  `json:"subType"`
-		Value   float64 `json:"value"`
-		Insulin string  `json:"insulin"`
-	}
-	NoteEvent struct {
-		Common
-		CreatorId string `json:"creatorId"`
-		Text      string `json:"text"`
-	}
 )
 
-func NewClient(cfg *Config, usrName, pw string) *PlatformClient {
+func NewClient(cfg *Config, usrName, pw string) *TidepoolClient {
 
-	client := &PlatformClient{config: cfg, httpClient: &http.Client{}}
+	client := &TidepoolClient{config: cfg, httpClient: &http.Client{}}
 
 	if tkn, err := client.login(usrName, pw); err != nil {
 		log.Panicf("Error init client: ", err)
@@ -93,7 +60,7 @@ func NewClient(cfg *Config, usrName, pw string) *PlatformClient {
 	}
 }
 
-func (c *PlatformClient) StashUserLocal(local store.Client) {
+func (c *TidepoolClient) StashUserLocal(local store.Client) {
 
 	err := local.StoreUser(c.User.Token, c.User.Name)
 
@@ -102,7 +69,7 @@ func (c *PlatformClient) StashUserLocal(local store.Client) {
 	}
 }
 
-func (tc *PlatformClient) login(usr, pw string) (token string, err error) {
+func (tc *TidepoolClient) login(usr, pw string) (token string, err error) {
 
 	req, err := http.NewRequest("POST", tc.config.Auth+"/login", nil)
 	req.SetBasicAuth(usr, pw)
@@ -116,7 +83,7 @@ func (tc *PlatformClient) login(usr, pw string) (token string, err error) {
 	}
 }
 
-func (tc *PlatformClient) Signup(name, pw, contact string) error {
+func (tc *TidepoolClient) Signup(name, pw, contact string) error {
 
 	newUsr := &User{Name: name, Pw: pw, Contact: contact}
 	jsonBlock, _ := json.Marshal(newUsr)
@@ -151,7 +118,7 @@ func (tc *PlatformClient) Signup(name, pw, contact string) error {
 	}
 }
 
-func (tc *PlatformClient) Profile(name string) error {
+func (tc *TidepoolClient) Profile(name string) error {
 
 	type profile struct {
 		FullName string `json:"fullName"`
@@ -179,7 +146,7 @@ func (tc *PlatformClient) Profile(name string) error {
 	}
 }
 
-func (tc *PlatformClient) LoadInto(data []interface{}) error {
+func (tc *TidepoolClient) LoadInto(data []interface{}) error {
 
 	jsonBlock, _ := json.Marshal(data)
 
@@ -205,6 +172,6 @@ func (tc *PlatformClient) LoadInto(data []interface{}) error {
 	return nil
 }
 
-func (tc *PlatformClient) LoadFrom(userid string) ([]interface{}, error) {
+func (tc *TidepoolClient) LoadFrom(userid string) ([]interface{}, error) {
 	return nil, nil
 }

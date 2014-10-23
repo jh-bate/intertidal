@@ -19,6 +19,7 @@ type (
 const (
 	//Available Sources
 	SourceTrackThis Source = "trackthis"
+	SourceSms       Source = "sms"
 
 	NotificationEmail Notification = "email"
 	NotificationSms   Notification = "sms"
