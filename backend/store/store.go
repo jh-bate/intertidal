@@ -1,9 +1,21 @@
 package store
 
 /*
- * Simple implamentation of key/value store using Bolt
+ * Generic store client
  */
+type Client interface {
+	Ping() error
+	StoreUser(key, token string) error
+	RetrieveUser(key string) ([]interface{}, error)
+	StoreUserData(usr string, data []interface{}) error
+	RetrieveUserData(usr string) ([]interface{}, error)
+	StoreConfig(key string, data []interface{}) error
+	RetrieveConfig(key string) ([]interface{}, error)
+}
 
+/*
+ * Simple mocked key/value store for testing
+ */
 type MockClient struct {
 	dataToReturn   []interface{}
 	configToReturn []interface{}

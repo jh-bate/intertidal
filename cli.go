@@ -5,20 +5,10 @@ import (
 	"log"
 
 	"github.com/jh-bate/intertidal/api"
-	"github.com/jh-bate/intertidal/flood/sms"
-	"github.com/jh-bate/intertidal/flood/trackthis"
-	"github.com/jh-bate/intertidal/platform"
-	"github.com/jh-bate/intertidal/store"
+	"github.com/jh-bate/intertidal/backend/platform"
+	"github.com/jh-bate/intertidal/backend/store"
+	"github.com/jh-bate/intertidal/examples"
 )
-
-func loadFromSms(token string, stash *store.BoltClient) {
-	log.Println("load from sms")
-	lt := sms.NewClient()
-
-	lt.Init(sms.Config{AuthToken: token, AccountSid: token}).
-		Load().
-		StashLocal("test", stash)
-}
 
 func loadFromTrackThis(token string, stash *store.BoltClient) {
 	log.Println("load from trackthis")
@@ -51,15 +41,7 @@ func main() {
 
 	stash := store.NewBoltClient()
 
-	/*if *destPtr == "stash" {
-		stash := store.NewBoltClient()
-	} else if *destPtr == "tp" {
-
-	}*/
-
-	if *srcPtr == string(api.SourceSms) {
-		loadFromSms(*authPtr, stash)
-	} else if *srcPtr == string(api.SourceTrackThis) {
+	if *srcPtr == string(api.SourceTrackThis) {
 		loadFromTrackThis(*authPtr, stash)
 	}
 }

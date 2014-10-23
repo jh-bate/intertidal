@@ -1,9 +1,8 @@
-package models
+package platform
 
 /*
  * Types that match what the tidepool platform expects
  */
-
 type (
 	Common struct {
 		Type     string `json:"type"`

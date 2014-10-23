@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jh-bate/intertidal/backend/platform"
+	"github.com/jh-bate/intertidal/backend/store"
 	"github.com/jh-bate/intertidal/flood"
-	"github.com/jh-bate/intertidal/platform"
-	"github.com/jh-bate/intertidal/store"
 )
 
 const (
