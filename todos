@@ -1,0 +1,20 @@
+## Bootstrap sms support into platform
+
+10) ability to create account via sms
+
+20) maintain logged in users token
+
+30) all data stashed using token
+
+40) integrate 2 way sms service
+ - https://telerivet.com
+
+## Integrate with reality keys and treat platform as an 'Oracle'
+
+10) pull data from platform for user
+
+20) run checks based on contract
+ 21 - goal self 'insurance'
+ 22 - personal goal
+
+30) issue key

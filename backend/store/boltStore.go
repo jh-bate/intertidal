@@ -15,19 +15,52 @@ type BoltClient struct{}
 
 const (
 	DATA   = "data"
+	USER   = "user"
 	CONFIG = "config"
 	DB     = "intertidal.db"
 )
 
 func NewBoltClient() *BoltClient {
-
 	return &BoltClient{}
 }
 
 func (b *BoltClient) Ping() error {
 	return nil
 }
-func (b *BoltClient) StoreData(key string, data []interface{}) error {
+func (b *BoltClient) StoreUser(key, token string) error {
+
+	db, err := bolt.Open(DB, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		dataB, err := tx.CreateBucketIfNotExists([]byte(USER))
+		err = dataB.Put([]byte(key), []byte(token))
+		return err
+	})
+	return err
+}
+
+func (b *BoltClient) RetrieveUser(key string) (results []interface{}, err error) {
+
+	db, err := bolt.Open(DB, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		dataB, err := tx.CreateBucketIfNotExists([]byte(USER))
+		jsonData := dataB.Get([]byte(key))
+
+		err = json.Unmarshal(jsonData, &results)
+		return err
+	})
+	return results, err
+}
+func (b *BoltClient) StoreUserData(usr string, data []interface{}) error {
 
 	jsonData, _ := json.Marshal(data)
 
@@ -39,12 +72,12 @@ func (b *BoltClient) StoreData(key string, data []interface{}) error {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		dataB, err := tx.CreateBucketIfNotExists([]byte(DATA))
-		err = dataB.Put([]byte(key), jsonData)
+		err = dataB.Put([]byte(usr), jsonData)
 		return err
 	})
 	return err
 }
-func (b *BoltClient) RetrieveData(key string) (results []interface{}, err error) {
+func (b *BoltClient) RetrieveUserData(usr string) (results []interface{}, err error) {
 
 	db, err := bolt.Open(DB, 0600, nil)
 	if err != nil {
@@ -54,7 +87,7 @@ func (b *BoltClient) RetrieveData(key string) (results []interface{}, err error)
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		dataB, err := tx.CreateBucketIfNotExists([]byte(DATA))
-		jsonData := dataB.Get([]byte(key))
+		jsonData := dataB.Get([]byte(usr))
 
 		err = json.Unmarshal(jsonData, &results)
 		return err
