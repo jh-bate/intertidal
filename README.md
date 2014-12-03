@@ -1,10 +1,12 @@
 Intertidal
 ==========
 
-Where data flows in and out of the platform
+Where data flows in and out of the Tidepool platform
 
 ## setup
 
 export GOPATH=your_go_path
 
-go run cmd/load.go -s=trackthis -t=auth_token
+```
+go run cli.go -s=trackthis -t=auth_token -u=tidepool_username -p=tidepool_password
+```

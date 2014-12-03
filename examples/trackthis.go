@@ -147,34 +147,37 @@ func (c *Client) loadCategory(categoryId string) TrackThisEntries {
 }
 
 func (c *Client) transform() {
+
+	bob := flood.NewEventBuilder()
+
 	for i := range c.raw {
 
 		switch {
 		case strings.Index(strings.ToUpper(c.raw[i].Type), BG) != -1:
 			for en := range c.raw[i].Entries {
-				c.processed = append(c.processed, flood.MakeBg(fmt.Sprintf("%.1f", c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
+				c.processed = append(c.processed, bob.BuildBg(fmt.Sprintf("%.1f", c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
 			}
 			break
 		case strings.Index(strings.ToUpper(c.raw[i].Type), CARBS) != -1:
 			for en := range c.raw[i].Entries {
-				c.processed = append(c.processed, flood.MakeCarb(fmt.Sprintf("%.1f", c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
+				c.processed = append(c.processed, bob.BuildFood(fmt.Sprintf("%.1f", c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
 			}
 			break
 		case strings.Index(strings.ToUpper(c.raw[i].Type), BOLUS) != -1:
 			for en := range c.raw[i].Entries {
-				c.processed = append(c.processed, flood.MakeBolus(fmt.Sprintf("%.1f", c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
+				c.processed = append(c.processed, bob.BuildBolus(fmt.Sprintf("%.1f", c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
 			}
 			break
 		case strings.Index(strings.ToUpper(c.raw[i].Type), BASAL) != -1:
 			for en := range c.raw[i].Entries {
-				c.processed = append(c.processed, flood.MakeBasal(fmt.Sprintf("%.1f", c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
+				c.processed = append(c.processed, bob.BuildBasal(fmt.Sprintf("%.1f", c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
 			}
 			break
 		default:
 			for en := range c.raw[i].Entries {
 				log.Println("Default: ", c.raw[i].Type)
 				log.Println("Save: ", fmt.Sprintf("#%s %.1f", c.raw[i].Type, c.raw[i].Entries[en].Value))
-				c.processed = append(c.processed, flood.MakeNote(fmt.Sprintf("#%s %.1f", c.raw[i].Type, c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
+				c.processed = append(c.processed, bob.BuildNote(fmt.Sprintf("#%s %.1f", c.raw[i].Type, c.raw[i].Entries[en].Value), c.raw[i].Entries[en].Time, deviceName))
 			}
 			break
 		}

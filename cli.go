@@ -10,38 +10,40 @@ import (
 	"github.com/jh-bate/intertidal/examples"
 )
 
-func loadFromTrackThis(token string, stash *store.BoltClient) {
+func loadFromTrackThis(token string, tp *platform.TidepoolClient, stash *store.BoltClient) {
 	log.Println("load from trackthis")
 
 	tt := trackthis.NewClient()
-	p := platform.NewClient(
-		&platform.Config{
-			Auth:   "https://staging-api.tidepool.io/auth",
-			Upload: "https://staging-uploads.tidepool.io/data",
-		},
-		"jamie@tidepool.org",
-		"blip4life",
-	)
 
-	p.StashUserLocal(stash)
+	tp.StashUserLocal(stash)
 
 	tt.Init(trackthis.Config{AuthToken: token}).
 		Load().
-		StorePlatform(p).
-		StashLocal(p.User.Token, stash)
+		StorePlatform(tp).
+		StashLocal(tp.User.Token, stash)
 }
 
 func main() {
 
 	srcPtr := flag.String("s", "", "where we are getting the data from")
-	authPtr := flag.String("t", "", "auth token for source")
-	//destPtr := flag.String("d", "stash", "where the data will be put")
+	usrPtr := flag.String("u", "", "tidepool username")
+	pwPtr := flag.String("p", "", "tidepool password")
+	srcTokenPtr := flag.String("t", "", "auth token for source")
 
 	flag.Parse()
 
 	stash := store.NewBoltClient()
 
+	tp := platform.NewClient(
+		&platform.Config{
+			Auth:   "https://api.tidepool.io/auth",
+			Upload: "https://uploads.tidepool.io/data",
+		},
+		*usrPtr,
+		*pwPtr,
+	)
+
 	if *srcPtr == string(api.SourceTrackThis) {
-		loadFromTrackThis(*authPtr, stash)
+		loadFromTrackThis(*srcTokenPtr, tp, stash)
 	}
 }
