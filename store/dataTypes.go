@@ -1,4 +1,4 @@
-package platform
+package store
 
 /*
  * Types that match what the tidepool platform expects
@@ -7,6 +7,7 @@ type (
 	Common struct {
 		Type     string `json:"type"`
 		DeviceId string `json:"deviceId"`
+		UploadId string `json:"uploadId"`
 		Source   string `json:"source"`
 		Time     string `json:"time"`
 	}
@@ -36,4 +37,22 @@ type (
 		CreatorId string `json:"creatorId"`
 		Text      string `json:"text"`
 	}
+	UploadEvent struct {
+		Common
+		UploadId string `json:"uploadId"`
+		TimeZone string `json:"timezoneName"`
+		Text     string `json:"text"`
+	}
+	/*
+			var uploadMeta = {
+		          type: 'upload',
+		          time: sessionInfo.start,
+		          timezone: sessionInfo.tzName,
+		          version: sessionInfo.version,
+		          deviceId: sessionInfo.deviceId,
+		          uploadId: generatedId,
+		          byUser: myUserId,
+		          source : 'tidepool'
+		        };
+	*/
 )

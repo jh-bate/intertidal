@@ -9,9 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jh-bate/intertidal/backend/platform"
-	"github.com/jh-bate/intertidal/backend/store"
 	"github.com/jh-bate/intertidal/flood"
+	"github.com/jh-bate/intertidal/store"
 )
 
 const (
@@ -22,6 +21,7 @@ const (
 	CARBS      = "CARBS"
 	BOLUS      = "NOVORAPID"
 	BASAL      = "LANTUS"
+	TRACK_THIS = "trackthis"
 )
 
 type (
@@ -92,29 +92,14 @@ func (c *Client) Load() *Client {
 	return c
 }
 
-func (c *Client) StashLocal(key string, local store.Client) *Client {
+func (c *Client) Store(store store.Client) *Client {
 
 	if len(c.processed) > 0 {
 
-		err := local.StoreUserData(key, c.processed)
+		err := store.Save(c.processed)
 
 		if err != nil {
-			log.Println("Error statshing data ", err)
-		}
-		return c
-	}
-	log.Println("No data to stash")
-	return c
-}
-
-func (c *Client) StorePlatform(platform platform.Client) *Client {
-
-	if len(c.processed) > 0 {
-
-		err := platform.LoadInto(c.processed)
-
-		if err != nil {
-			log.Println("Error sending to platform ", err)
+			log.Println("Error storing data ", err)
 		}
 		return c
 	}
