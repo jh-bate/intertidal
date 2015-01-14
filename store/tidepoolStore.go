@@ -14,18 +14,18 @@ const (
 
 type (
 	TidepoolClient struct {
-		config     *Config
+		config     *TidepoolConfig
 		httpClient *http.Client
 		User       *User
 	}
-	Config struct {
+	TidepoolConfig struct {
 		Auth   string `json:"auth"`
 		Upload string `json:"upload"`
 		Query  string `json:"query"`
 	}
 )
 
-func NewTidepoolClient(cfg *Config, usrName, pw string) *TidepoolClient {
+func NewTidepoolClient(cfg *TidepoolConfig, usrName, pw string) *TidepoolClient {
 
 	client := &TidepoolClient{config: cfg, httpClient: &http.Client{}}
 
@@ -90,7 +90,7 @@ func (tc *TidepoolClient) Save(data []interface{}) error {
 	return nil
 }
 
-func (tc *TidepoolClient) Query(qry *Query) ([]interface{}, error) {
+func (tc *TidepoolClient) Run(qry *Query) ([]interface{}, error) {
 
 	if qry.UserId == "" {
 		qry.UserId = tc.User.Id

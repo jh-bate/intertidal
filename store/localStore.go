@@ -29,7 +29,7 @@ func (lc *LocalClient) Sync(with Client) error {
 
 	// get what we have locally
 	qry := &Query{UserId: lc.User.Id}
-	toSync, _ := lc.Query(qry)
+	toSync, _ := lc.Run(qry)
 
 	//send it to the other store reporting what occured
 	if syncErr := with.Save(toSync); syncErr != nil {
@@ -67,7 +67,7 @@ func (lc *LocalClient) Save(data []interface{}) error {
 	return err
 }
 
-func (lc *LocalClient) Query(qry *Query) (data []interface{}, err error) {
+func (lc *LocalClient) Run(qry *Query) (data []interface{}, err error) {
 
 	if lc.User.Id == "" {
 		return nil, errors.New(USR_ID_NOTSET)

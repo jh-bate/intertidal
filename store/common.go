@@ -10,7 +10,7 @@ type (
 	Client interface {
 		Ping() error
 		Save(data []interface{}) error
-		Query(qry *Query) (data []interface{}, err error)
+		Run(qry *Query) (data []interface{}, err error)
 	}
 	// Query
 	Query struct {
@@ -23,6 +23,7 @@ type (
 		Token string `json:"-"`
 		Id    string `json:"-"`
 		Name  string `json:"username"`
+		Pw    string `json:"-"`
 	}
 )
 
@@ -34,4 +35,12 @@ const (
 func (q *Query) ToString() string {
 	const queryString = "METAQUERY WHERE userid IS %s QUERY TYPE IN %s WHERE time > %s SORT BY time AS Timestamp REVERSED"
 	return fmt.Sprintf(queryString, q.UserId, strings.Join(q.Types, ","), q.FromTime)
+}
+
+func (u *User) CanLogin() bool {
+	return u.Name != "" && u.Pw != ""
+}
+
+func (u *User) IsLoggedIn() bool {
+	return u.Token != ""
 }

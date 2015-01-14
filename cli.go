@@ -12,7 +12,7 @@ const (
 	LOCAL = "local"
 )
 
-func load(token string, store store.Client) {
+func loadData(token string, store store.Client) {
 	log.Println("load from trackthis")
 
 	tt := trackthis.NewClient()
@@ -22,59 +22,74 @@ func load(token string, store store.Client) {
 		Store(store)
 }
 
-func makeStore(server bool) store.Client {
-	/*store.NewTidepoolClient(
-	&store.Config{
-		Auth:   "https://api.tidepool.io/auth",
-		Upload: "https://uploads.tidepool.io/data",
-		Query:  "https://api.tidepool.io/query",
-	},
-	*usr,
-	*pw)*/
-	return store.NewLocalClient(&store.User{Id: "todo2"})
+func makeStore(server bool, usr *store.User) store.Client {
+
+	if server && usr.CanLogin() {
+		return store.NewTidepoolClient(
+			&store.TidepoolConfig{
+				Auth:   "https://api.tidepool.io/auth",
+				Upload: "https://uploads.tidepool.io/data",
+				Query:  "https://api.tidepool.io/query",
+			},
+			usr.Name,
+			usr.Pw)
+	}
+
+	return store.NewLocalClient(usr)
 }
 
-func sync() {
-	log.Println("sync stores")
+func runSync() {
+	log.Println("we should sync stores")
 }
 
-func query() {
-	log.Println("query")
+func doQuery(s store.Client, qry *store.Query) {
+	data, _ := s.Run(qry)
+	log.Printf("%v", data)
 }
 
 func main() {
 
-	//-from trackthis -frm_key XXXXX -server
+	//-do=l -key=xxxx [-to=cs -u= -p=]
 
-	//-sync -u an@email.org -p 123x43
+	//-do=q [-from=cs -u= -p=]
 
-	//
+	//-do=s [-from=cs -u= -p=]
 
-	//incomming data
-	//src := flag.String("frm", trackthis.TRACK_THIS, "where we are getting the data from")
-	srcToken := flag.String("frm_key", "", "auth token for source")
-
-	//platfrom
-	//usr := flag.String("u", "", "tidepool username")
-	//pw := flag.String("p", "", "tidepool password")
-
-	//storage
-	//sync := flag.Bool("sync", false, "to you want to sync local with server")
-	server := flag.Bool("server", false, "send to server, default is local")
+	//what
+	load := flag.Bool("l", false, "do a l(oad)")
+	query := flag.Bool("q", false, "do a q(uery)")
+	sync := flag.Bool("s", false, "do a s(ync)")
+	//where from
+	from := flag.String("from", "ls", "cs(central-store), ls(local-store), df(data-feed)")
+	key := flag.String("key", "", "key for the df(data-feed)")
+	//where to
+	to := flag.String("to", "ls", "cs(central-store), ls(local-store)")
+	//creds
+	un := flag.String("u", "", "cs(central-store) username")
+	pw := flag.String("p", "", "cs(central-store) password")
 
 	flag.Parse()
 
-	//load data from trackthis
-	load(*srcToken, makeStore(*server))
+	loggedInUser := &store.User{}
 
-	/*tp := platform.NewClient(
-		&platform.Config{
-			Auth:   "https://api.tidepool.io/auth",
-			Upload: "https://uploads.tidepool.io/data",
-			Query:  "https://api.tidepool.io/query",
-		},
-		*usr,
-		*pw,
-	)*/
+	if *un != "" && *pw != "" {
+		loggedInUser.Name = *un
+		loggedInUser.Pw = *pw
+	} else {
+		loggedInUser.Id = "todo2"
+	}
+
+	toStore := makeStore(*to == "cs", loggedInUser)
+	fromStore := makeStore(*from == "cs", loggedInUser)
+
+	if *load && *key != "" {
+		loadData(*key, toStore)
+	}
+	if *query {
+		doQuery(fromStore, &store.Query{})
+	}
+	if *sync && loggedInUser.CanLogin() {
+		runSync()
+	}
 
 }
