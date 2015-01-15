@@ -86,7 +86,7 @@ func main() {
 		loadData(*key, toStore)
 	}
 	if *query {
-		doQuery(fromStore, &store.Query{})
+		doQuery(fromStore, &store.Query{Types: []string{"smbg"}})
 	}
 	if *sync && loggedInUser.CanLogin() {
 		runSync()

@@ -67,11 +67,35 @@ func (lc *LocalClient) Save(data []interface{}) error {
 	return err
 }
 
-func (lc *LocalClient) Run(qry *Query) (data []interface{}, err error) {
+func doQuery(all []map[string]interface{}, qry *Query) (matches []interface{}) {
+
+	for i := range all {
+		if len(qry.Types) == 0 && qry.FromTime == "" {
+			matches = append(matches, all[i])
+		} else {
+
+			for t := range qry.Types {
+
+				if qry.FromTime == "" {
+					if all[i]["type"] == qry.Types[t] {
+						matches = append(matches, all[i])
+					}
+				} else {
+					log.Print("Time not yet implemented")
+				}
+			}
+		}
+	}
+	return matches
+}
+
+func (lc *LocalClient) Run(qry *Query) (results []interface{}, err error) {
 
 	if lc.User.Id == "" {
 		return nil, errors.New(USR_ID_NOTSET)
 	}
+
+	var data []map[string]interface{}
 
 	db, err := bolt.Open(storeName, 0600, nil)
 	if err != nil {
@@ -86,5 +110,6 @@ func (lc *LocalClient) Run(qry *Query) (data []interface{}, err error) {
 		err = json.Unmarshal(jsonData, &data)
 		return err
 	})
-	return data, err
+
+	return doQuery(data, qry), err
 }
