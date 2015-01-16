@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"strings"
+	"unicode"
 
 	"github.com/jh-bate/intertidal/examples"
 	"github.com/jh-bate/intertidal/store"
@@ -89,12 +90,10 @@ func main() {
 		loadData(*key, toStore)
 	}
 	if *query {
-		types := strings.Split(*qt, ",")
-
-		for i, val := range types {
-			types[i] = strings.Trim(val, "\"")
+		justAlphaNumeric := func(c rune) bool {
+			return !unicode.IsLetter(c) && !unicode.IsNumber(c)
 		}
-		doQuery(fromStore, &store.Query{Types: types})
+		doQuery(fromStore, &store.Query{Types: strings.FieldsFunc(*qt, justAlphaNumeric)})
 	}
 	if *sync && loggedInUser.CanLogin() {
 		runSync()

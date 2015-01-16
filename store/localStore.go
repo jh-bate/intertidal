@@ -135,7 +135,6 @@ func doQuery(all []map[string]interface{}, qry *Query) (matches []interface{}) {
 		} else {
 
 			for t := range qry.Types {
-				log.Printf("types are %v", qry.Types)
 
 				if qry.FromTime == "" {
 					if all[i]["type"] == qry.Types[t] {
