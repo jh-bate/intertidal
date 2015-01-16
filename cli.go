@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"strings"
 
 	"github.com/jh-bate/intertidal/examples"
 	"github.com/jh-bate/intertidal/store"
@@ -67,6 +68,8 @@ func main() {
 	//creds
 	un := flag.String("u", "", "cs(central-store) username")
 	pw := flag.String("p", "", "cs(central-store) password")
+	//query
+	qt := flag.String("qt", "smbg", "query types e.g. smbg, food")
 
 	flag.Parse()
 
@@ -86,7 +89,12 @@ func main() {
 		loadData(*key, toStore)
 	}
 	if *query {
-		doQuery(fromStore, &store.Query{Types: []string{"smbg"}})
+		types := strings.Split(*qt, ",")
+
+		for i, val := range types {
+			types[i] = strings.Trim(val, "\"")
+		}
+		doQuery(fromStore, &store.Query{Types: types})
 	}
 	if *sync && loggedInUser.CanLogin() {
 		runSync()

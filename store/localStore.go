@@ -4,25 +4,98 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/boltdb/bolt"
 )
 
 /*
- * Simple implamentation of key/value store using Bolt
+ * Simple key/value store using Bolt
  */
 
-type LocalClient struct {
-	User *User
-}
+type (
+	LocalClient struct {
+		User *User
+	}
+	Bet struct {
+		UserId       string    `json:"source"`
+		Feed         string    `json:"feed-address"`
+		Deadline     time.Time `json:"deadline"`
+		Type         string    `json:"bet-type"` //
+		TargetValue  string    `json:"target-value"`
+		Wager        float32   `json:"wager"`
+		CounterWager float32   `json:"counterwager"`
+	}
+)
 
 const (
 	DATA_COLLECTION = "data"
+	USR_COLLECTION  = "user"
+	BET_COLLECTION  = "bet"
 	storeName       = "intertidal.db"
 )
 
 func NewLocalClient(user *User) *LocalClient {
-	return &LocalClient{User: user}
+
+	lc := &LocalClient{User: user}
+
+	if lc.User.IsSet() == false {
+		if err := lc.login(); err == nil {
+			log.Panicf("No user found: %s", err.Error())
+		}
+	}
+
+	return lc
+
+}
+
+func saveIt(what interface{}, where string, who string) error {
+	jsonData, _ := json.Marshal(what)
+
+	db, err := bolt.Open(storeName, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		dataB, err := tx.CreateBucketIfNotExists([]byte(where))
+		err = dataB.Put([]byte(who), jsonData)
+		return err
+	})
+	return err
+}
+
+func getIt(what, where string, data interface{}) error {
+	db, err := bolt.Open(storeName, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		dataB, err := tx.CreateBucketIfNotExists([]byte(where))
+		jsonData := dataB.Get([]byte(what))
+
+		err = json.Unmarshal(jsonData, &data)
+		return err
+	})
+	return nil
+}
+
+// we need to login to the platform to be able to us it
+func (lc *LocalClient) login() error {
+	return getIt("current", USR_COLLECTION, &lc.User)
+}
+
+// we need to login to the platform to be able to us it
+func (lc *LocalClient) lodge(b *Bet) error {
+	return saveIt(b, BET_COLLECTION, lc.User.Id)
+}
+
+// we need to login to the platform to be able to us it
+func (lc *LocalClient) check(b *Bet) error {
+	return getIt(lc.User.Id, BET_COLLECTION, &b)
 }
 
 func (lc *LocalClient) Sync(with Client) error {
@@ -51,20 +124,7 @@ func (lc *LocalClient) Save(data []interface{}) error {
 		return errors.New(USR_ID_NOTSET)
 	}
 
-	jsonData, _ := json.Marshal(data)
-
-	db, err := bolt.Open(storeName, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		dataB, err := tx.CreateBucketIfNotExists([]byte(DATA_COLLECTION))
-		err = dataB.Put([]byte(lc.User.Id), jsonData)
-		return err
-	})
-	return err
+	return saveIt(data, DATA_COLLECTION, lc.User.Id)
 }
 
 func doQuery(all []map[string]interface{}, qry *Query) (matches []interface{}) {
@@ -75,6 +135,7 @@ func doQuery(all []map[string]interface{}, qry *Query) (matches []interface{}) {
 		} else {
 
 			for t := range qry.Types {
+				log.Printf("types are %v", qry.Types)
 
 				if qry.FromTime == "" {
 					if all[i]["type"] == qry.Types[t] {
@@ -97,19 +158,9 @@ func (lc *LocalClient) Run(qry *Query) (results []interface{}, err error) {
 
 	var data []map[string]interface{}
 
-	db, err := bolt.Open(storeName, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
+	if err = getIt(lc.User.Id, DATA_COLLECTION, &data); err != nil {
+		return nil, err
 	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		dataB, err := tx.CreateBucketIfNotExists([]byte(DATA_COLLECTION))
-		jsonData := dataB.Get([]byte(lc.User.Id))
-
-		err = json.Unmarshal(jsonData, &data)
-		return err
-	})
 
 	return doQuery(data, qry), err
 }

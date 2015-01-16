@@ -44,3 +44,7 @@ func (u *User) CanLogin() bool {
 func (u *User) IsLoggedIn() bool {
 	return u.Token != ""
 }
+
+func (u *User) IsSet() bool {
+	return u.Id != ""
+}
