@@ -18,6 +18,16 @@ type (
 		Types    []string
 		FromTime string
 	}
+
+	QueryOne struct {
+		UserId   string
+		Type     string
+		FromTime string
+		Equals   struct {
+			Val  float32
+			Cond string
+		}
+	}
 	// User
 	User struct {
 		Token string `json:"-"`

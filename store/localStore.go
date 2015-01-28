@@ -17,22 +17,22 @@ type (
 	LocalClient struct {
 		User *User
 	}
-	Bet struct {
-		UserId       string    `json:"source"`
-		Feed         string    `json:"feed-address"`
-		Deadline     time.Time `json:"deadline"`
-		Type         string    `json:"bet-type"` //
-		TargetValue  string    `json:"target-value"`
-		Wager        float32   `json:"wager"`
-		CounterWager float32   `json:"counterwager"`
+	Pledge struct {
+		UserId        string    `json:"source"`
+		Feed          string    `json:"feed-address"`
+		Deadline      time.Time `json:"deadline"`
+		Type          string    `json:"bet-type"` //
+		TargetValue   string    `json:"target-value"`
+		Pledge        float64   `json:"wager"`
+		CounterPledge float64   `json:"counterwager"`
 	}
 )
 
 const (
-	DATA_COLLECTION = "data"
-	USR_COLLECTION  = "user"
-	BET_COLLECTION  = "bet"
-	storeName       = "intertidal.db"
+	DATA_COLLECTION   = "data"
+	USR_COLLECTION    = "user"
+	PLEDGE_COLLECTION = "pledge"
+	storeName         = "intertidal.db"
 )
 
 func NewLocalClient(user *User) *LocalClient {
@@ -77,6 +77,8 @@ func getIt(what, where string, data interface{}) error {
 		dataB, err := tx.CreateBucketIfNotExists([]byte(where))
 		jsonData := dataB.Get([]byte(what))
 
+		log.Printf("data %s", jsonData)
+
 		err = json.Unmarshal(jsonData, &data)
 		return err
 	})
@@ -88,24 +90,36 @@ func (lc *LocalClient) login() error {
 	return getIt("current", USR_COLLECTION, &lc.User)
 }
 
-// we need to login to the platform to be able to us it
-func (lc *LocalClient) lodge(b *Bet) error {
-	return saveIt(b, BET_COLLECTION, lc.User.Id)
+// register a new pledge
+func (lc *LocalClient) Register(p *Pledge) error {
+
+	log.Printf("saving %v for user %s", p, lc.User.Id)
+
+	return saveIt(p, PLEDGE_COLLECTION, lc.User.Id)
 }
 
-// we need to login to the platform to be able to us it
-func (lc *LocalClient) check(b *Bet) error {
-	return getIt(lc.User.Id, BET_COLLECTION, &b)
+// load all existing pledges
+func (lc *LocalClient) Load() ([]interface{}, error) {
+
+	var data []interface{}
+
+	if err := getIt(lc.User.Id, PLEDGE_COLLECTION, &data); err != nil {
+		return nil, err
+	}
+
+	log.Printf("pledges %s", data)
+
+	return data, nil
 }
 
 func (lc *LocalClient) Sync(with Client) error {
 
 	// get what we have locally
 	qry := &Query{UserId: lc.User.Id}
-	toSync, _ := lc.Run(qry)
+	dataToSync, _ := lc.Run(qry)
 
 	//send it to the other store reporting what occured
-	if syncErr := with.Save(toSync); syncErr != nil {
+	if syncErr := with.Save(dataToSync); syncErr != nil {
 		log.Printf("Error trying to sync query: %v err: %v ", qry, syncErr)
 		return syncErr
 	}
