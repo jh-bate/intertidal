@@ -15,14 +15,16 @@ const (
 	LOCAL = "local"
 )
 
-func loadData(token string, store store.Client) {
+func loadData(usr *store.User, dest, key string) {
+
 	log.Println("load from trackthis")
+	s := makeStore(dest == "tp", usr)
 
 	tt := trackthis.NewClient()
 
-	tt.Init(trackthis.Config{AuthToken: token}).
+	tt.Init(trackthis.Config{AuthToken: key}).
 		Load().
-		Store(store)
+		Store(s)
 }
 
 func makeStore(server bool, usr *store.User) store.Client {
@@ -41,18 +43,39 @@ func makeStore(server bool, usr *store.User) store.Client {
 	return store.NewLocalClient(usr)
 }
 
-func runSync() {
-	log.Println("we should sync stores")
+func doSync(usr *store.User, from, to string) {
+	if usr.CanLogin() {
+		log.Println("we should sync from [%s] to [%s]", from, to)
+		return
+	}
+	log.Println("we cannot sync as the user doesn't have valid creds")
 }
 
-func doQuery(s store.Client, qry *store.Query) {
-	data, _ := s.Run(qry)
+func doQuery(usr *store.User, storeName, types string) {
+
+	//todo the split of the types we want to query for
+	justAlphaNumeric := func(c rune) bool {
+		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
+	}
+
+	storeToQry := makeStore(storeName == "tp", usr)
+	qryToRun := &store.Query{Types: strings.FieldsFunc(types, justAlphaNumeric)}
+
+	data, _ := storeToQry.Run(qryToRun)
 	log.Printf("%v", data)
 }
 
-func checkPledges(s *store.LocalClient) {
+func checkPledges(usr *store.User) {
+	s := store.NewLocalClient(usr)
 	pledges, _ := s.Load()
 	log.Printf("found pledges %v", pledges)
+}
+
+func makePledge(usr *store.User, p *store.Pledge) {
+	p.UserId = usr.Id
+	log.Printf("pleadge %v", p)
+	store := store.NewLocalClient(usr)
+	store.Register(p)
 }
 
 func main() {
@@ -77,21 +100,23 @@ func main() {
 
 	//query flags
 	query := flag.Bool("query", false, "run a query")
-	querySource := flag.String("query_source", "local", "local(local-store),  tp(tp-store)")
+	queryFrom := flag.String("query_from", "local", "local(local-store),  tp(tp-store)")
 	queryTypes := flag.String("query_types", "smbg", "query types e.g. smbg, food")
 	queryPledge := flag.Bool("query_pledge", false, "query all registered pledges")
 
 	//pledge flages
+	pledgeData := &store.Pledge{Type: "Equal"}
 	pledge := flag.Bool("pledge", false, "make a pledge")
-	pledgeDate := flag.String("pledge_date", "", "date the pledge finished e.g. 2015-11-20")
-	pledgeValue := flag.String("pledge_value", "", "target value e.g. <=7.5")
-	pledgeType := flag.String("pledge_type", "", "the pledge type e.g `smbg` or `weight`")
-	pledgeWager := flag.Float64("pledge_wager", 0, "the wager")
-	pledgeCounter := flag.Float64("pledge_counter_wager", 0, "the counter wager")
+	pledgeData.Deadline, _ = time.Parse("2006-01-02", *flag.String("pledge_date", "", "date the pledge finished e.g. 2015-11-20"))
+	pledgeData.TargetValue = *flag.String("pledge_value", "", "target value e.g. <=7.5")
+	pledgeData.Feed = *flag.String("pledge_feed", "", "the pledge feed e.g `smbg` or `weight`")
+	pledgeData.Pledge = *flag.Float64("pledge_wager", 0, "the wager")
+	pledgeData.CounterPledge = *flag.Float64("pledge_counter_wager", 0, "the counter wager")
 
 	//sync flags
 	sync := flag.Bool("sync", false, "sync data")
-	//syncTo := flag.String("sync_to", "local", "local(local-store),  tp(tp-store)")
+	syncFrom := flag.String("sync_from", "local", "local(local-store),  tp(tp-store)")
+	syncTo := flag.String("sync_to", "local", "local(local-store),  tp(tp-store)")
 
 	//tidepool user
 	tpUsr := flag.String("tp_usr", "", "local(local-store),  tp(tp-store)")
@@ -108,48 +133,28 @@ func main() {
 		loggedInUser.Id = "todo2"
 	}
 
-	//loading
-	if *load && *loadKey != "" {
-		sendToStore := makeStore(*loadInto == "tp", loggedInUser)
-		loadData(*loadKey, sendToStore)
+	//loading data
+	if *load {
+		loadData(loggedInUser, *loadInto, *loadKey)
 	}
 
-	//querying
+	//querying data
 	if *query {
-		//todo the split
-		justAlphaNumeric := func(c rune) bool {
-			return !unicode.IsLetter(c) && !unicode.IsNumber(c)
-		}
-		qryFromStore := makeStore(*querySource == "tp", loggedInUser)
-		doQuery(qryFromStore, &store.Query{Types: strings.FieldsFunc(*queryTypes, justAlphaNumeric)})
+		doQuery(loggedInUser, *queryFrom, *queryTypes)
 	}
-	//syncing
-	if *sync && loggedInUser.CanLogin() {
-		runSync()
+
+	//syncing data
+	if *sync {
+		doSync(loggedInUser, *syncFrom, *syncTo)
 	}
 
 	//pledge
-	if *queryPledge == true {
-		checkPledges(store.NewLocalClient(loggedInUser))
+	if *queryPledge {
+		checkPledges(loggedInUser)
 	}
 
-	if *pledge == true {
-
-		dl, _ := time.Parse("2006-01-02", *pledgeDate)
-
-		pledge := &store.Pledge{
-			UserId:        loggedInUser.Id,
-			Feed:          *pledgeType,
-			Type:          "Equal",
-			Deadline:      dl,
-			TargetValue:   *pledgeValue,
-			Pledge:        *pledgeWager,
-			CounterPledge: *pledgeCounter,
-		}
-
-		log.Printf("pleadge %v", pledge)
-		store := store.NewLocalClient(loggedInUser)
-		store.Register(pledge)
+	if *pledge {
+		makePledge(loggedInUser, pledgeData)
 	}
 
 }
