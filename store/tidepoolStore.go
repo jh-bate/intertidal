@@ -27,30 +27,28 @@ type (
 
 func NewTidepoolClient(cfg *TidepoolConfig, usrName, pw string) *TidepoolClient {
 
-	client := &TidepoolClient{config: cfg, httpClient: &http.Client{}}
+	client := &TidepoolClient{config: cfg, httpClient: &http.Client{}, User: &User{Name: usrName, Pw: pw}}
 
-	if tkn, err := client.login(usrName, pw); err != nil {
+	if err := client.Login(); err != nil {
 		log.Panicf("Error init client: ", err)
 		return nil
-	} else {
-		client.User = &User{Token: tkn, Name: usrName}
-		log.Printf("user [%v]", client.User)
-		return client
 	}
+	return client
 }
 
 // we need to login to the platform to be able to us it
-func (tc *TidepoolClient) login(usr, pw string) (token string, err error) {
+func (tc *TidepoolClient) Login() (err error) {
 
 	req, err := http.NewRequest("POST", tc.config.Auth+"/login", nil)
-	req.SetBasicAuth(usr, pw)
+	req.SetBasicAuth(tc.User.Name, tc.User.Pw)
 	if resp, err := tc.httpClient.Do(req); err != nil {
-		return "", err
+		return err
 	} else {
 		if resp.StatusCode == http.StatusOK {
-			return resp.Header.Get(TP_SESSION_TOKEN), nil
+			tc.User.Token = resp.Header.Get(TP_SESSION_TOKEN)
+			return nil
 		}
-		return "", errors.New("Issue logging in: " + string(resp.StatusCode))
+		return errors.New("Issue logging in: " + string(resp.StatusCode))
 	}
 }
 

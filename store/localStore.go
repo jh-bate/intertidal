@@ -40,7 +40,7 @@ func NewLocalClient(user *User) *LocalClient {
 	lc := &LocalClient{User: user}
 
 	if lc.User.IsSet() == false {
-		if err := lc.login(); err == nil {
+		if err := lc.Login(); err != nil {
 			log.Panicf("No user found: %s", err.Error())
 		}
 	}
@@ -86,8 +86,12 @@ func getIt(what, where string, data interface{}) error {
 }
 
 // we need to login to the platform to be able to us it
-func (lc *LocalClient) login() error {
-	return getIt("current", USR_COLLECTION, &lc.User)
+func (lc *LocalClient) Login() error {
+	if err := getIt("current", USR_COLLECTION, &lc.User); err != nil {
+		return err
+	}
+	lc.User.Id = "todo2"
+	return nil
 }
 
 // register a new pledge
@@ -133,6 +137,8 @@ func (lc *LocalClient) Ping() error {
 }
 
 func (lc *LocalClient) Save(data []interface{}) error {
+
+	log.Printf("save with user %v", lc.User)
 
 	if lc.User.Id == "" {
 		return errors.New(USR_ID_NOTSET)

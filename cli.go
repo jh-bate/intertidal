@@ -20,6 +20,8 @@ func loadData(usr *store.User, dest, key string) {
 	log.Println("load from trackthis")
 	s := makeStore(dest == "tp", usr)
 
+	usr.Login(s)
+
 	tt := trackthis.NewClient()
 
 	tt.Init(trackthis.Config{AuthToken: key}).
@@ -44,6 +46,13 @@ func makeStore(server bool, usr *store.User) store.Client {
 }
 
 func doSync(usr *store.User, from, to string) {
+
+	fs := makeStore(from == "tp", usr)
+	ts := makeStore(to == "tp", usr)
+
+	usr.Login(fs)
+	usr.Login(ts)
+
 	if usr.CanLogin() {
 		log.Println("we should sync from [%s] to [%s]", from, to)
 		return
@@ -58,15 +67,18 @@ func doQuery(usr *store.User, storeName, types string) {
 		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
 	}
 
-	storeToQry := makeStore(storeName == "tp", usr)
+	s := makeStore(storeName == "tp", usr)
 	qryToRun := &store.Query{Types: strings.FieldsFunc(types, justAlphaNumeric)}
 
-	data, _ := storeToQry.Run(qryToRun)
+	usr.Login(s)
+
+	data, _ := s.Run(qryToRun)
 	log.Printf("%v", data)
 }
 
 func checkPledges(usr *store.User) {
 	s := store.NewLocalClient(usr)
+	usr.Login(s)
 	pledges, _ := s.Load()
 	log.Printf("found pledges %v", pledges)
 }
@@ -74,8 +86,9 @@ func checkPledges(usr *store.User) {
 func makePledge(usr *store.User, p *store.Pledge) {
 	p.UserId = usr.Id
 	log.Printf("pleadge %v", p)
-	store := store.NewLocalClient(usr)
-	store.Register(p)
+	s := store.NewLocalClient(usr)
+	usr.Login(s)
+	s.Register(p)
 }
 
 func main() {
@@ -92,6 +105,8 @@ func main() {
 		### Query Pledge
 		go run cli.go -query_pledge
 	*/
+
+	user := &store.User{}
 
 	//load flags
 	load := flag.Bool("load", false, "do a data load")
@@ -119,42 +134,33 @@ func main() {
 	syncTo := flag.String("sync_to", "local", "local(local-store),  tp(tp-store)")
 
 	//tidepool user
-	tpUsr := flag.String("tp_usr", "", "local(local-store),  tp(tp-store)")
-	tpPw := flag.String("tp_pw", "", "local(local-store),  tp(tp-store)")
+	user.Name = *flag.String("tp_usr", "", "local(local-store),  tp(tp-store)")
+	user.Pw = *flag.String("tp_pw", "", "local(local-store),  tp(tp-store)")
 
 	flag.Parse()
 
-	loggedInUser := &store.User{}
-
-	if *tpUsr != "" && *tpPw != "" {
-		loggedInUser.Name = *tpUsr
-		loggedInUser.Pw = *tpPw
-	} else {
-		loggedInUser.Id = "todo2"
-	}
-
 	//loading data
 	if *load {
-		loadData(loggedInUser, *loadInto, *loadKey)
+		loadData(user, *loadInto, *loadKey)
 	}
 
 	//querying data
 	if *query {
-		doQuery(loggedInUser, *queryFrom, *queryTypes)
+		doQuery(user, *queryFrom, *queryTypes)
 	}
 
 	//syncing data
 	if *sync {
-		doSync(loggedInUser, *syncFrom, *syncTo)
+		doSync(user, *syncFrom, *syncTo)
 	}
 
 	//pledge
 	if *queryPledge {
-		checkPledges(loggedInUser)
+		checkPledges(user)
 	}
 
 	if *pledge {
-		makePledge(loggedInUser, pledgeData)
+		makePledge(user, pledgeData)
 	}
 
 }
