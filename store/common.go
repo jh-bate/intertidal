@@ -2,7 +2,6 @@ package store
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -55,14 +54,6 @@ func (u *User) CanLogin() bool {
 
 func (u *User) IsLoggedIn() bool {
 	return u.Token != ""
-}
-
-func (u *User) Login(givenStore Client) {
-
-	if err := givenStore.Login(); err != nil {
-		log.Panicf("Failed trying to login user [%v] ", u)
-	}
-
 }
 
 func (u *User) IsSet() bool {

@@ -20,7 +20,7 @@ func loadData(usr *store.User, dest, key string) {
 	log.Println("load from trackthis")
 	s := makeStore(dest == "tp", usr)
 
-	usr.Login(s)
+	s.Login()
 
 	tt := trackthis.NewClient()
 
@@ -50,8 +50,8 @@ func doSync(usr *store.User, from, to string) {
 	fs := makeStore(from == "tp", usr)
 	ts := makeStore(to == "tp", usr)
 
-	usr.Login(fs)
-	usr.Login(ts)
+	fs.Login()
+	ts.Login()
 
 	if usr.CanLogin() {
 		log.Println("we should sync from [%s] to [%s]", from, to)
@@ -70,7 +70,7 @@ func doQuery(usr *store.User, storeName, types string) {
 	s := makeStore(storeName == "tp", usr)
 	qryToRun := &store.Query{Types: strings.FieldsFunc(types, justAlphaNumeric)}
 
-	usr.Login(s)
+	s.Login()
 
 	data, _ := s.Run(qryToRun)
 	log.Printf("%v", data)
@@ -78,7 +78,7 @@ func doQuery(usr *store.User, storeName, types string) {
 
 func checkPledges(usr *store.User) {
 	s := store.NewLocalClient(usr)
-	usr.Login(s)
+	s.Login()
 	pledges, _ := s.Load()
 	log.Printf("found pledges %v", pledges)
 }
@@ -87,7 +87,7 @@ func makePledge(usr *store.User, p *store.Pledge) {
 	p.UserId = usr.Id
 	log.Printf("pleadge %v", p)
 	s := store.NewLocalClient(usr)
-	usr.Login(s)
+	s.Login()
 	s.Register(p)
 }
 
