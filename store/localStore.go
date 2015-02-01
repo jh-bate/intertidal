@@ -77,8 +77,6 @@ func getIt(what, where string, data interface{}) error {
 		dataB, err := tx.CreateBucketIfNotExists([]byte(where))
 		jsonData := dataB.Get([]byte(what))
 
-		log.Printf("data %s", jsonData)
-
 		err = json.Unmarshal(jsonData, &data)
 		return err
 	})
@@ -103,17 +101,22 @@ func (lc *LocalClient) Register(p *Pledge) error {
 }
 
 // load all existing pledges
-func (lc *LocalClient) Load() ([]interface{}, error) {
+func (lc *LocalClient) Load() (*Pledge, error) {
 
-	var data []interface{}
+	data := &Pledge{}
 
-	if err := getIt(lc.User.Id, PLEDGE_COLLECTION, &data); err != nil {
+	if err := getIt(lc.User.Id, PLEDGE_COLLECTION, data); err != nil {
 		return nil, err
 	}
 
-	log.Printf("pledges %s", data)
+	//log.Printf("pledges %s", data)
 
 	return data, nil
+}
+
+// check in favour of the wager
+func (lc *LocalClient) Evaluate(p *Pledge) bool {
+	return false
 }
 
 func (lc *LocalClient) Sync(with Client) error {

@@ -86,9 +86,9 @@ func checkPledges(usr *store.User) {
 func makePledge(usr *store.User, p *store.Pledge) {
 	p.UserId = usr.Id
 	log.Printf("pleadge %v", p)
-	s := store.NewLocalClient(usr)
-	s.Login()
-	s.Register(p)
+	//s := store.NewLocalClient(usr)
+	//s.Login()
+	//s.Register(p)
 }
 
 func main() {
@@ -122,11 +122,15 @@ func main() {
 	//pledge flages
 	pledgeData := &store.Pledge{Type: "Equal"}
 	pledge := flag.Bool("pledge", false, "make a pledge")
-	pledgeData.Deadline, _ = time.Parse("2006-01-02", *flag.String("pledge_date", "", "date the pledge finished e.g. 2015-11-20"))
-	pledgeData.TargetValue = *flag.String("pledge_value", "", "target value e.g. <=7.5")
-	pledgeData.Feed = *flag.String("pledge_feed", "", "the pledge feed e.g `smbg` or `weight`")
-	pledgeData.Pledge = *flag.Float64("pledge_wager", 0, "the wager")
-	pledgeData.CounterPledge = *flag.Float64("pledge_counter_wager", 0, "the counter wager")
+
+	days := 0
+	flag.IntVar(&days, "pledge_length", 90, "number of days before pledge finished e.g. 90")
+	pledgeData.Deadline = time.Now().AddDate(0, 0, days)
+
+	flag.StringVar(&pledgeData.TargetValue, "pledge_value", "", "target value e.g. <=7.5")
+	flag.StringVar(&pledgeData.Feed, "pledge_feed", "", "the pledge feed e.g `smbg` or `weight`")
+	flag.Float64Var(&pledgeData.Pledge, "pledge_wager", 0, "the wager")
+	flag.Float64Var(&pledgeData.CounterPledge, "pledge_counter_wager", 0, "the counter wager")
 
 	//sync flags
 	sync := flag.Bool("sync", false, "sync data")
@@ -134,8 +138,8 @@ func main() {
 	syncTo := flag.String("sync_to", "local", "local(local-store),  tp(tp-store)")
 
 	//tidepool user
-	user.Name = *flag.String("tp_usr", "", "local(local-store),  tp(tp-store)")
-	user.Pw = *flag.String("tp_pw", "", "local(local-store),  tp(tp-store)")
+	flag.StringVar(&user.Name, "tp_usr", "", "local(local-store),  tp(tp-store)")
+	flag.StringVar(&user.Pw, "tp_pw", "", "local(local-store),  tp(tp-store)")
 
 	flag.Parse()
 
@@ -160,6 +164,7 @@ func main() {
 	}
 
 	if *pledge {
+		log.Printf("pledge %v", pledgeData)
 		makePledge(user, pledgeData)
 	}
 
