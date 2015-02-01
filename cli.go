@@ -29,10 +29,10 @@ func loadData(usr *store.User, dest, key string) {
 		Store(s)
 }
 
-func makeStore(server bool, usr *store.User) store.Client {
+func makeStore(server bool, usr *store.User) store.Store {
 
-	if server && usr.CanLogin() {
-		return store.NewTidepoolClient(
+	/*if server && usr.CanLogin() {
+		return store.NewTidepoolStore(
 			&store.TidepoolConfig{
 				Auth:   "https://api.tidepool.io/auth",
 				Upload: "https://uploads.tidepool.io/data",
@@ -40,9 +40,9 @@ func makeStore(server bool, usr *store.User) store.Client {
 			},
 			usr.Name,
 			usr.Pw)
-	}
+	}*/
 
-	return store.NewLocalClient(usr)
+	return store.NewLocalStore(usr)
 }
 
 func doSync(usr *store.User, from, to string) {
@@ -71,24 +71,24 @@ func doQuery(usr *store.User, storeName, types string) {
 	qryToRun := &store.Query{Types: strings.FieldsFunc(types, justAlphaNumeric)}
 
 	s.Login()
-
-	data, _ := s.Run(qryToRun)
-	log.Printf("%v", data)
+	results, _ := s.Query(qryToRun)
+	log.Printf("query returned %v", results)
 }
 
 func checkPledges(usr *store.User) {
-	s := store.NewLocalClient(usr)
+	s := store.NewLocalStore(usr)
 	s.Login()
-	pledges, _ := s.Load()
-	log.Printf("found pledges %v", pledges)
+	var pledges store.Pledge
+	s.Find(store.PLEDGES, &pledges)
+	log.Printf("found pledges %v", &pledges)
 }
 
 func makePledge(usr *store.User, p *store.Pledge) {
 	p.UserId = usr.Id
 	log.Printf("pleadge %v", p)
-	//s := store.NewLocalClient(usr)
-	//s.Login()
-	//s.Register(p)
+	s := store.NewLocalStore(usr)
+	s.Login()
+	s.Save(store.PLEDGES, p)
 }
 
 func main() {

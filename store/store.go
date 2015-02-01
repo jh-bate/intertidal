@@ -7,11 +7,14 @@ import (
 
 type (
 	// Generic store interface
-	Client interface {
+	Store interface {
 		Ping() error
-		Save(data []interface{}) error
-		Run(qry *Query) (data []interface{}, err error)
 		Login() error
+		//data
+		Find(collection string, results interface{}) error
+		Query(qry *Query) (results []map[string]interface{}, err error)
+		Save(collection string, data interface{}) error
+		Sync(collection string, other Store) error
 	}
 	// Query
 	Query struct {
@@ -29,33 +32,9 @@ type (
 			Cond string
 		}
 	}
-	// User
-	User struct {
-		Token string `json:"-"`
-		Id    string `json:"-"`
-		Name  string `json:"username"`
-		Pw    string `json:"-"`
-	}
-)
-
-const (
-	USR_ID_NOTSET   = "The User.Id is required but hasn't been set"
-	USR_NAME_NOTSET = "The User.Name is required but hasn't been set"
 )
 
 func (q *Query) ToString() string {
 	const queryString = "METAQUERY WHERE userid IS %s QUERY TYPE IN %s WHERE time > %s SORT BY time AS Timestamp REVERSED"
 	return fmt.Sprintf(queryString, q.UserId, strings.Join(q.Types, ","), q.FromTime)
-}
-
-func (u *User) CanLogin() bool {
-	return u.Name != "" && u.Pw != ""
-}
-
-func (u *User) IsLoggedIn() bool {
-	return u.Token != ""
-}
-
-func (u *User) IsSet() bool {
-	return u.Id != ""
 }

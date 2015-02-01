@@ -13,7 +13,7 @@ const (
 )
 
 type (
-	TidepoolClient struct {
+	TidepoolStore struct {
 		config     *TidepoolConfig
 		httpClient *http.Client
 		User       *User
@@ -25,9 +25,9 @@ type (
 	}
 )
 
-func NewTidepoolClient(cfg *TidepoolConfig, usrName, pw string) *TidepoolClient {
+func NewTidepoolStore(cfg *TidepoolConfig, usrName, pw string) *TidepoolStore {
 
-	client := &TidepoolClient{config: cfg, httpClient: &http.Client{}, User: &User{Name: usrName, Pw: pw}}
+	client := &TidepoolStore{config: cfg, httpClient: &http.Client{}, User: &User{Name: usrName, Pw: pw}}
 
 	if err := client.Login(); err != nil {
 		log.Panicf("Error init client: ", err)
@@ -37,7 +37,7 @@ func NewTidepoolClient(cfg *TidepoolConfig, usrName, pw string) *TidepoolClient 
 }
 
 // we need to login to the platform to be able to us it
-func (tc *TidepoolClient) Login() (err error) {
+func (tc *TidepoolStore) Login() (err error) {
 
 	req, err := http.NewRequest("POST", tc.config.Auth+"/login", nil)
 	req.SetBasicAuth(tc.User.Name, tc.User.Pw)
@@ -52,7 +52,7 @@ func (tc *TidepoolClient) Login() (err error) {
 	}
 }
 
-func (tc *TidepoolClient) Ping() error {
+func (tc *TidepoolStore) Ping() error {
 	req, _ := http.NewRequest("GET", tc.config.Auth+"/status", nil)
 
 	if resp, err := tc.httpClient.Do(req); err != nil {
@@ -63,7 +63,7 @@ func (tc *TidepoolClient) Ping() error {
 	return nil
 }
 
-func (tc *TidepoolClient) Save(data []interface{}) error {
+func (tc *TidepoolStore) Save(data []interface{}) error {
 
 	jsonBlock, _ := json.Marshal(data)
 
@@ -88,7 +88,7 @@ func (tc *TidepoolClient) Save(data []interface{}) error {
 	return nil
 }
 
-func (tc *TidepoolClient) Run(qry *Query) ([]interface{}, error) {
+func (tc *TidepoolStore) Run(qry *Query) ([]interface{}, error) {
 
 	if qry.UserId == "" {
 		qry.UserId = tc.User.Id

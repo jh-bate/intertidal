@@ -7,7 +7,7 @@ import (
 type DataFeed interface {
 	Init(config interface{}) *DataFeed
 	Load() *DataFeed
-	Store(store *store.Client) *DataFeed
+	Store(store *store.Store) *DataFeed
 }
 
 /*
@@ -19,6 +19,6 @@ func NewMockFeed() *MockFeed {
 	return &MockFeed{}
 }
 
-func (f *MockFeed) Init(config interface{})   {}
-func (f *MockFeed) Load()                     {}
-func (f *MockFeed) Store(store *store.Client) {}
+func (f *MockFeed) Init(config interface{})  {}
+func (f *MockFeed) Load()                    {}
+func (f *MockFeed) Store(store *store.Store) {}

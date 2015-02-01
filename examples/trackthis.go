@@ -92,11 +92,11 @@ func (c *Client) Load() *Client {
 	return c
 }
 
-func (c *Client) Store(store store.Client) *Client {
+func (c *Client) Store(s store.Store) *Client {
 
 	if len(c.processed) > 0 {
 
-		err := store.Save(c.processed)
+		err := s.Save(store.DATA_COLLECTION, c.processed)
 
 		if err != nil {
 			log.Println("Error storing data ", err)

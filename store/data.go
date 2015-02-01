@@ -1,5 +1,9 @@
 package store
 
+const (
+	DATA_COLLECTION = "data"
+)
+
 /*
  * Types that match what the tidepool platform expects
  */
