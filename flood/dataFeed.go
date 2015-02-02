@@ -1,13 +1,13 @@
 package flood
 
 import (
-	"github.com/jh-bate/intertidal/store"
+	"github.com/jh-bate/intertidal"
 )
 
 type DataFeed interface {
 	Init(config interface{}) *DataFeed
 	Load() *DataFeed
-	Store(store *store.Store) *DataFeed
+	Store(store *intertidal.Store) *DataFeed
 }
 
 /*
@@ -19,6 +19,6 @@ func NewMockFeed() *MockFeed {
 	return &MockFeed{}
 }
 
-func (f *MockFeed) Init(config interface{})  {}
-func (f *MockFeed) Load()                    {}
-func (f *MockFeed) Store(store *store.Store) {}
+func (f *MockFeed) Init(config interface{})       {}
+func (f *MockFeed) Load()                         {}
+func (f *MockFeed) Store(store *intertidal.Store) {}

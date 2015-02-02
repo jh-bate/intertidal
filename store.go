@@ -1,4 +1,4 @@
-package store
+package intertidal
 
 import (
 	"fmt"

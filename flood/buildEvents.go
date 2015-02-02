@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jh-bate/intertidal/store"
+	"github.com/jh-bate/intertidal"
 )
 
 type (
@@ -22,7 +22,7 @@ type (
 )
 
 const (
-	intertidal = "intertidal"
+	SRC_INTERTIDAL = "intertidal"
 	//Available Pattern's
 	PatternSmbg  Pattern = "smbg"
 	PatternFood  Pattern = "food"
@@ -84,38 +84,38 @@ func (self *EventBuilder) Process() (events []interface{}) {
 }
 
 //create note type from text
-func (self *EventBuilder) BuildNote(text, date, device string) *store.NoteEvent {
-	return &store.NoteEvent{
-		Common:    store.Common{Type: "note", Source: intertidal, DeviceId: device, Time: date},
+func (self *EventBuilder) BuildNote(text, date, device string) *intertidal.NoteEvent {
+	return &intertidal.NoteEvent{
+		Common:    intertidal.Common{Type: "note", Source: SRC_INTERTIDAL, DeviceId: device, Time: date},
 		Text:      text,
 		CreatorId: device,
 	}
 }
 
 //create bg type from text
-func (self *EventBuilder) BuildBg(val, date, device string) *store.BgEvent {
+func (self *EventBuilder) BuildBg(val, date, device string) *intertidal.BgEvent {
 	bgVal, _ := strconv.ParseFloat(val, 64)
 
-	return &store.BgEvent{
-		Common: store.Common{Type: "smbg", DeviceId: device, Source: intertidal, Time: date},
+	return &intertidal.BgEvent{
+		Common: intertidal.Common{Type: "smbg", DeviceId: device, Source: SRC_INTERTIDAL, Time: date},
 		Value:  bgVal,
 	}
 }
 
 //create food type from text
-func (self *EventBuilder) BuildFood(val, date, device string) *store.FoodEvent {
+func (self *EventBuilder) BuildFood(val, date, device string) *intertidal.FoodEvent {
 	carbVal, _ := strconv.ParseFloat(val, 64)
-	return &store.FoodEvent{
-		Common: store.Common{Type: "food", DeviceId: device, Source: intertidal, Time: date},
+	return &intertidal.FoodEvent{
+		Common: intertidal.Common{Type: "food", DeviceId: device, Source: SRC_INTERTIDAL, Time: date},
 		Carbs:  carbVal,
 	}
 }
 
 //create bolus type from text
-func (self *EventBuilder) BuildBolus(val, date, device string) *store.BolusEvent {
+func (self *EventBuilder) BuildBolus(val, date, device string) *intertidal.BolusEvent {
 	bolusVal, _ := strconv.ParseFloat(val, 64)
-	return &store.BolusEvent{
-		Common:  store.Common{Type: "bolus", DeviceId: device, Source: intertidal, Time: date},
+	return &intertidal.BolusEvent{
+		Common:  intertidal.Common{Type: "bolus", DeviceId: device, Source: SRC_INTERTIDAL, Time: date},
 		SubType: "injected",
 		Value:   bolusVal,
 		Insulin: "novolog",
@@ -123,10 +123,10 @@ func (self *EventBuilder) BuildBolus(val, date, device string) *store.BolusEvent
 }
 
 //create basal type from text
-func (self *EventBuilder) BuildBasal(val, date, device string) *store.BasalEvent {
+func (self *EventBuilder) BuildBasal(val, date, device string) *intertidal.BasalEvent {
 	basalVal, _ := strconv.ParseFloat(val, 64)
-	return &store.BasalEvent{
-		Common:       store.Common{Type: "basal", DeviceId: device, Source: intertidal, Time: date},
+	return &intertidal.BasalEvent{
+		Common:       intertidal.Common{Type: "basal", DeviceId: device, Source: SRC_INTERTIDAL, Time: date},
 		DeliveryType: "injected",
 		Value:        basalVal,
 		Insulin:      "lantus",

@@ -7,15 +7,15 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/jh-bate/intertidal/examples"
-	"github.com/jh-bate/intertidal/store"
+	"github.com/jh-bate/intertidal"
+	"github.com/jh-bate/intertidal/examples/datafeed"
 )
 
 const (
 	LOCAL = "local"
 )
 
-func loadData(usr *store.User, dest, key string) {
+func loadData(usr *intertidal.User, dest, key string) {
 
 	log.Println("load from trackthis")
 	s := makeStore(dest == "tp", usr)
@@ -29,11 +29,11 @@ func loadData(usr *store.User, dest, key string) {
 		Store(s)
 }
 
-func makeStore(server bool, usr *store.User) store.Store {
+func makeStore(server bool, usr *intertidal.User) intertidal.Store {
 
 	/*if server && usr.CanLogin() {
-		return store.NewTidepoolStore(
-			&store.TidepoolConfig{
+		return intertidal.NewTidepoolStore(
+			&intertidal.TidepoolConfig{
 				Auth:   "https://api.tidepool.io/auth",
 				Upload: "https://uploads.tidepool.io/data",
 				Query:  "https://api.tidepool.io/query",
@@ -42,10 +42,10 @@ func makeStore(server bool, usr *store.User) store.Store {
 			usr.Pw)
 	}*/
 
-	return store.NewLocalStore(usr)
+	return intertidal.NewLocalStore(usr)
 }
 
-func doSync(usr *store.User, from, to string) {
+func doSync(usr *intertidal.User, from, to string) {
 
 	fs := makeStore(from == "tp", usr)
 	ts := makeStore(to == "tp", usr)
@@ -60,7 +60,7 @@ func doSync(usr *store.User, from, to string) {
 	log.Println("we cannot sync as the user doesn't have valid creds")
 }
 
-func doQuery(usr *store.User, storeName, types string) {
+func doQuery(usr *intertidal.User, storeName, types string) {
 
 	//todo the split of the types we want to query for
 	justAlphaNumeric := func(c rune) bool {
@@ -68,45 +68,45 @@ func doQuery(usr *store.User, storeName, types string) {
 	}
 
 	s := makeStore(storeName == "tp", usr)
-	qryToRun := &store.Query{Types: strings.FieldsFunc(types, justAlphaNumeric)}
+	qryToRun := &intertidal.Query{Types: strings.FieldsFunc(types, justAlphaNumeric)}
 
 	s.Login()
 	results, _ := s.Query(qryToRun)
 	log.Printf("query returned %v", results)
 }
 
-func checkPledges(usr *store.User) {
-	s := store.NewLocalStore(usr)
+func checkPledges(usr *intertidal.User) {
+	s := intertidal.NewLocalStore(usr)
 	s.Login()
-	var pledges store.Pledge
-	s.Find(store.PLEDGES, &pledges)
+	var pledges intertidal.Pledge
+	s.Find(intertidal.PLEDGES_COLLECTION, &pledges)
 	log.Printf("found pledges %v", &pledges)
 }
 
-func makePledge(usr *store.User, p *store.Pledge) {
+func makePledge(usr *intertidal.User, p *intertidal.Pledge) {
 	p.UserId = usr.Id
 	log.Printf("pleadge %v", p)
-	s := store.NewLocalStore(usr)
+	s := intertidal.NewLocalStore(usr)
 	s.Login()
-	s.Save(store.PLEDGES, p)
+	s.Save(intertidal.PLEDGES_COLLECTION, p)
 }
 
 func main() {
 
 	/*
 		### Load data
-		go run cli.go -load_data -load_key=fcc72d1e11858cdce96783033c1f5af46185eec78d9233a8161b05845671e943
+		go run examples/cli.go -load_data -load_key=fcc72d1e11858cdce96783033c1f5af46185eec78d9233a8161b05845671e943
 		### Query Data
-		go run cli.go -query_data -query_types bolus,food
+		go run examples/cli.go -query_data -query_types bolus,food
 
 
 		### Create Pledge
-		go run cli.go -make_pledge -pledge_date "2015-06-06" -pledge_value "<= 7.5" -pledge_type smbg -pledge_wager 3 -pledge_counter_wager 1
+		go run examples/cli.go -make_pledge -pledge_date "2015-06-06" -pledge_value "<= 7.5" -pledge_type smbg -pledge_wager 3 -pledge_counter_wager 1
 		### Query Pledge
-		go run cli.go -query_pledge
+		go run examples/cli.go -query_pledge
 	*/
 
-	user := &store.User{}
+	user := &intertidal.User{}
 
 	//load flags
 	load := flag.Bool("load", false, "do a data load")
@@ -120,7 +120,7 @@ func main() {
 	queryPledge := flag.Bool("query_pledge", false, "query all registered pledges")
 
 	//pledge flages
-	pledgeData := &store.Pledge{Type: "Equal"}
+	pledgeData := &intertidal.Pledge{Type: "Equal"}
 	pledge := flag.Bool("pledge", false, "make a pledge")
 
 	days := 0

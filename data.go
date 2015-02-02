@@ -1,4 +1,4 @@
-package store
+package intertidal
 
 const (
 	DATA_COLLECTION = "data"

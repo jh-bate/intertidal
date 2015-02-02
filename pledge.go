@@ -1,10 +1,10 @@
-package store
+package intertidal
 
 import (
 	"time"
 )
 
-const PLEDGES = "pledges"
+const PLEDGES_COLLECTION = "pledges"
 
 type (
 	Pledge struct {
@@ -27,5 +27,5 @@ func (p *Pledge) Evaluate(store Store) bool {
 }
 
 func (p *Pledge) Save(store Store) error {
-	return store.Save(PLEDGES, p)
+	return store.Save(PLEDGES_COLLECTION, p)
 }

@@ -1,4 +1,4 @@
-package store
+package intertidal
 
 /*
  * Simple mocked key/value store for testing

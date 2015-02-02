@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jh-bate/intertidal"
 	"github.com/jh-bate/intertidal/flood"
-	"github.com/jh-bate/intertidal/store"
 )
 
 const (
@@ -92,11 +92,11 @@ func (c *Client) Load() *Client {
 	return c
 }
 
-func (c *Client) Store(s store.Store) *Client {
+func (c *Client) Store(s intertidal.Store) *Client {
 
 	if len(c.processed) > 0 {
 
-		err := s.Save(store.DATA_COLLECTION, c.processed)
+		err := s.Save(intertidal.DATA_COLLECTION, c.processed)
 
 		if err != nil {
 			log.Println("Error storing data ", err)
