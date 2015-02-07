@@ -80,7 +80,9 @@ func checkPledges(usr *intertidal.User) {
 	s.Login()
 	var pledges intertidal.Pledge
 	s.Find(intertidal.PLEDGES_COLLECTION, &pledges)
-	log.Printf("found pledges %v", &pledges)
+
+	good := pledges.Evaluate(s)
+	log.Printf("won? %t", good)
 }
 
 func makePledge(usr *intertidal.User, p *intertidal.Pledge) {
@@ -126,6 +128,10 @@ func main() {
 	days := 0
 	flag.IntVar(&days, "pledge_length", 90, "number of days before pledge finished e.g. 90")
 	pledgeData.Deadline = time.Now().AddDate(0, 0, days)
+
+	daysFromNow := 0
+	flag.IntVar(&daysFromNow, "pledge_start", 0, "number of days from now the pledge will start e.g. -30")
+	pledgeData.Started = time.Now().AddDate(0, 0, daysFromNow)
 
 	flag.StringVar(&pledgeData.TargetValue, "pledge_value", "", "target value e.g. <=7.5")
 	flag.StringVar(&pledgeData.Feed, "pledge_feed", "", "the pledge feed e.g `smbg` or `weight`")

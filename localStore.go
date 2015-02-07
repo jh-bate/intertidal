@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -78,7 +79,7 @@ func (ls *LocalStore) Find(collection string, results interface{}) error {
 		dataB, err := tx.CreateBucketIfNotExists([]byte(collection))
 		jsonData := dataB.Get([]byte(ls.User.Id))
 
-		log.Printf("found this %s", jsonData)
+		//log.Printf("found this %s", jsonData)
 
 		err = json.Unmarshal(jsonData, &results)
 		return err
@@ -119,6 +120,12 @@ func (ls *LocalStore) Sync(collection string, with Store) error {
 
 func doQuery(all []map[string]interface{}, qry *Query) (results []map[string]interface{}) {
 
+	var qt time.Time
+
+	if qry.FromTime != "" {
+		qt, _ = time.Parse(time.RFC3339Nano, qry.FromTime)
+	}
+
 	for i := range all {
 		if len(qry.Types) == 0 && qry.FromTime == "" {
 			results = append(results, all[i])
@@ -132,7 +139,12 @@ func doQuery(all []map[string]interface{}, qry *Query) (results []map[string]int
 						results = append(results, all[i])
 					}
 				} else {
-					log.Print("Time not yet implemented")
+					//log.Printf("time check ... %v", qt)
+					et, _ := time.Parse(time.RFC3339Nano, all[i]["time"].(string))
+					if et.After(qt) && all[i]["type"] == qry.Types[t] {
+						results = append(results, all[i])
+						//log.Print("added ...")
+					}
 				}
 			}
 		}
