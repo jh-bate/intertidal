@@ -2,6 +2,8 @@ package intertidal
 
 import (
 	"log"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -24,6 +26,36 @@ func Make(userId, feed, target string, wager, counterWager float64, started, dea
 	return &Pledge{UserId: userId, Feed: feed, Deadline: deadline, Started: started, Type: "Equal", TargetValue: target, Pledge: wager, CounterPledge: counterWager}
 }
 
+func (p *Pledge) meetTarget(actualVal float64) bool {
+
+	targetVal := 0.0
+	cmpOp := "=="
+
+	parts := strings.Split(p.TargetValue, " ")
+
+	if len(parts) == 2 {
+		cmpOp = parts[0]
+		targetVal, _ = strconv.ParseFloat(parts[1], 64)
+	} else if len(parts) == 1 {
+		targetVal, _ = strconv.ParseFloat(parts[0], 64)
+	} else {
+		return false
+	}
+
+	switch cmpOp {
+	case ">":
+		return actualVal > targetVal
+	case ">=":
+		return actualVal >= targetVal
+	case "<":
+		return actualVal < targetVal
+	case "<=":
+		return actualVal <= targetVal
+	default:
+		return actualVal == targetVal
+	}
+}
+
 func (p *Pledge) Evaluate(store Store) bool {
 
 	pledgeQry := &Query{
@@ -42,7 +74,7 @@ func (p *Pledge) Evaluate(store Store) bool {
 
 	log.Printf("count %d total %.1f ave %.1f target %s", len(results), total, total/float64(len(results)), p.TargetValue)
 
-	return false
+	return p.meetTarget(total / float64(len(results)))
 }
 
 func (p *Pledge) Save(store Store) error {
