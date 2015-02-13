@@ -81,8 +81,7 @@ func checkPledges(usr *intertidal.User) {
 	var pledges intertidal.Pledge
 	s.Find(intertidal.PLEDGES_COLLECTION, &pledges)
 
-	good := pledges.Evaluate(s)
-	log.Printf("won? %t", good)
+	log.Printf("meet? %t", pledges.Evaluate(s))
 }
 
 func makePledge(usr *intertidal.User, p *intertidal.Pledge) {

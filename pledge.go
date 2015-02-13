@@ -26,6 +26,8 @@ func Make(userId, feed, target string, wager, counterWager float64, started, dea
 	return &Pledge{UserId: userId, Feed: feed, Deadline: deadline, Started: started, Type: "Equal", TargetValue: target, Pledge: wager, CounterPledge: counterWager}
 }
 
+// the target value can be a basic condition that we need to
+// evaluate e.g.  >= 10.3
 func (p *Pledge) meetTarget(actualVal float64) bool {
 
 	targetVal := 0.0
