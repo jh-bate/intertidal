@@ -8,6 +8,7 @@ const (
  * Types that match what the tidepool platform expects
  */
 type (
+	//common types that all others will inherit
 	Common struct {
 		Type     string `json:"type"`
 		DeviceId string `json:"deviceId"`
@@ -15,14 +16,17 @@ type (
 		Source   string `json:"source"`
 		Time     string `json:"time"`
 	}
+	//a simple BG value
 	BgEvent struct {
 		Common
 		Value float64 `json:"value"`
 	}
+	//a food event measured by carbs consumed
 	FoodEvent struct {
 		Common
 		Carbs float64 `json:"carbs"`
 	}
+	//long acting or background insulin
 	BasalEvent struct {
 		Common
 		DeliveryType string  `json:"deliveryType"`
@@ -30,12 +34,14 @@ type (
 		Duration     int     `json:"duration"`
 		Insulin      string  `json:"insulin"`
 	}
+	//short acting insulin
 	BolusEvent struct {
 		Common
 		SubType string  `json:"subType"`
 		Value   float64 `json:"value"`
 		Insulin string  `json:"insulin"`
 	}
+	//a note to add context to data
 	NoteEvent struct {
 		Common
 		CreatorId string `json:"creatorId"`
