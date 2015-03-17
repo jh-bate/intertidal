@@ -31,7 +31,7 @@ func loadData(usr *intertidal.User, dest, key string) {
 
 func makeStore(server bool, usr *intertidal.User) intertidal.Store {
 
-	/*if server && usr.CanLogin() {
+	if server && usr.CanLogin() {
 		return intertidal.NewTidepoolStore(
 			&intertidal.TidepoolConfig{
 				Auth:   "https://api.tidepool.io/auth",
@@ -40,7 +40,7 @@ func makeStore(server bool, usr *intertidal.User) intertidal.Store {
 			},
 			usr.Name,
 			usr.Pw)
-	}*/
+	}
 
 	return intertidal.NewLocalStore(usr)
 }
@@ -140,7 +140,6 @@ func main() {
 	//sync flags
 	sync := flag.Bool("sync", false, "sync data")
 	syncFrom := flag.String("sync_from", "local", "local(local-store),  tp(tp-store)")
-	syncTo := flag.String("sync_to", "local", "local(local-store),  tp(tp-store)")
 
 	//tidepool user
 	flag.StringVar(&user.Name, "tp_usr", "", "local(local-store),  tp(tp-store)")
@@ -160,7 +159,11 @@ func main() {
 
 	//syncing data
 	if *sync {
-		doSync(user, *syncFrom, *syncTo)
+		syncTo := "tp"
+		if *syncFrom != "local" {
+			syncTo = "local"
+		}
+		doSync(user, *syncFrom, syncTo)
 	}
 
 	//pledge
