@@ -12,10 +12,12 @@ type (
 	}
 )
 
-func AddPledgeAction(store data.Store, name string, pledge *data.Pledge) *AddPledge {
+func AddPledgeAction(calldata interface{}, store data.Store, name string) *AddPledge {
+
+	pledge := calldata.(*data.Pledge)
 	return &AddPledge{store: store, name: name, pledge: pledge}
 }
 
-func (a *AddPledge) Execute() error {
-	return a.store.Save(a.name, a.pledge)
+func (a *AddPledge) Execute() (interface{}, error) {
+	return nil, a.store.Save(a.name, a.pledge)
 }

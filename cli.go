@@ -49,6 +49,7 @@ func main() {
 	flag.Float64Var(&pledgeData.IfMeet, "pledge_wager", 0, "the wager")
 	flag.Float64Var(&pledgeData.IfNotMeet, "pledge_counter_wager", 0, "the counter wager")
 
+	//query
 	query := flag.Bool("query", false, "run a query")
 
 	flag.Parse()
@@ -56,7 +57,8 @@ func main() {
 	//loading data
 	if *load {
 		log.Println("loading ...")
-		dl := actions.LoadDataAction([]byte(fmt.Sprintf(`{"authToken":"%s"}`, *loadKey)))
+
+		dl := actions.LoadDataAction([]byte(fmt.Sprintf(`{"authToken":"%s"}`, *loadKey)), str, data.DATA_COLLECTION)
 		dl.Execute()
 		log.Printf("loaded [%d] records", len(dl.Results))
 		if *save == true {
@@ -73,7 +75,7 @@ func main() {
 	if *pledge && *query == false {
 		log.Println("adding pledge ...")
 		log.Printf("pledge %v", pledgeData)
-		p := actions.AddPledgeAction(str, data.PLEDGE_COLLECTION, pledgeData)
+		p := actions.AddPledgeAction(pledgeData, str, data.PLEDGE_COLLECTION)
 		p.Execute()
 		log.Print("added pledge")
 	}
@@ -81,9 +83,23 @@ func main() {
 	//query a pledge
 	if *pledge && *query {
 		log.Println("querying pledge ...")
-		p := actions.CheckPledgeAction(str, data.PLEDGE_COLLECTION)
+		p := actions.CheckPledgeAction(nil, str, data.PLEDGE_COLLECTION)
 		p.Execute()
 		log.Print("queryed pledge. ")
 		log.Printf("target meet? %t", p.Yay)
+	}
+
+	//query
+	if *query && *pledge == false {
+		log.Println("querying ...")
+
+		qry := &data.Query{
+			Types:  []string{"smbg"},
+			UserId: user.Id,
+		}
+		q := actions.QueryDataAction(qry, str, data.DATA_COLLECTION)
+		q.Execute()
+		log.Print("queried.")
+		log.Printf("results? %v", q.Results)
 	}
 }

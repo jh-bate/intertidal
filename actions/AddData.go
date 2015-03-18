@@ -16,6 +16,6 @@ func AddDataAction(data interface{}, store data.Store, name string) *AddData {
 	return &AddData{data: data, store: store, name: name}
 }
 
-func (a *AddData) Execute() error {
-	return a.store.Save(a.name, a.data)
+func (a *AddData) Execute() (interface{}, error) {
+	return nil, a.store.Save(a.name, a.data)
 }

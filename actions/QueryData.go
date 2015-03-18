@@ -7,19 +7,18 @@ import (
 type (
 	QueryData struct {
 		query   *data.Query
-		results interface{}
+		Results interface{}
 		store   data.Store
 		name    string
 	}
 )
 
-func QueryDataAction(query *data.Query, store data.Store, name string) *QueryData {
+func QueryDataAction(calldata interface{}, store data.Store, name string) *QueryData {
+
+	query := calldata.(*data.Query)
 	return &QueryData{query: query, store: store, name: name}
 }
 
-func (a *QueryData) Execute() (err error) {
-	if a.results, err = a.store.Query2(a.name, a.query); err != nil {
-		return err
-	}
-	return nil
+func (a *QueryData) Execute() (results interface{}, err error) {
+	return a.store.Query(a.name, a.query)
 }

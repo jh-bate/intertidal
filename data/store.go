@@ -12,8 +12,7 @@ type (
 		//find all the data in the given collection for the logged in user
 		Find(collection string, results interface{}) error
 		//find all data the matches the given query and collection
-		Query(qry *Query) (results []map[string]interface{}, err error)
-		Query2(collection string, qry *Query) (results interface{}, err error)
+		Query(collection string, qry *Query) (results []map[string]interface{}, err error)
 		//save the given data to the named collection for the logged in user
 		Save(collection string, data interface{}) error
 		//the named collection in this store with the given store

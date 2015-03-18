@@ -77,32 +77,18 @@ func (ls *LocalStore) Find(collection string, results interface{}) error {
 	return nil
 }
 
-func (ls *LocalStore) Query(qry *Query) (results []map[string]interface{}, err error) {
+func (ls *LocalStore) Query(collection string, qry *Query) (results []map[string]interface{}, err error) {
 	if ls.User.Id == "" {
 		return nil, errors.New(USR_ID_NOTSET)
 	}
 
 	var all []map[string]interface{}
 
-	if err = ls.Find(DATA_COLLECTION, &all); err != nil {
+	if err = ls.Find(collection, &all); err != nil {
 		return nil, err
 	}
 
-	return doQuery(all, qry), nil
-}
-
-func (ls *LocalStore) Query2(collection string, qry *Query) (results interface{}, err error) {
-	if ls.User.Id == "" {
-		return nil, errors.New(USR_ID_NOTSET)
-	}
-
-	var data []map[string]interface{}
-
-	if err = ls.Find(collection, &data); err != nil {
-		return nil, err
-	}
-
-	return runQuery(data, qry), nil
+	return runQuery(all, qry), nil
 }
 
 func (ls *LocalStore) Sync(collection string, with Store) error {
@@ -122,38 +108,7 @@ func (ls *LocalStore) Sync(collection string, with Store) error {
 	return nil
 }
 
-func runQuery(data []map[string]interface{}, qry *Query) (results []interface{}) {
-
-	var qt time.Time
-
-	if qry.FromTime != "" {
-		qt, _ = time.Parse(time.RFC3339Nano, qry.FromTime)
-	}
-
-	for i := range data {
-		if len(qry.Types) == 0 && qry.FromTime == "" {
-			results = append(results, data[i])
-		} else {
-
-			for t := range qry.Types {
-
-				if qry.FromTime == "" {
-					if data[i]["type"] == qry.Types[t] {
-						results = append(results, data[i])
-					}
-				} else {
-					et, _ := time.Parse(time.RFC3339Nano, data[i]["time"].(string))
-					if et.After(qt) && data[i]["type"] == qry.Types[t] {
-						results = append(results, data[i])
-					}
-				}
-			}
-		}
-	}
-	return results
-}
-
-func doQuery(all []map[string]interface{}, qry *Query) (results []map[string]interface{}) {
+func runQuery(all []map[string]interface{}, qry *Query) (results []map[string]interface{}) {
 
 	var qt time.Time
 

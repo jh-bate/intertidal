@@ -17,11 +17,11 @@ type (
 	}
 )
 
-func CheckPledgeAction(store data.Store, name string) *CheckPledge {
+func CheckPledgeAction(calldata interface{}, store data.Store, name string) *CheckPledge {
 	return &CheckPledge{store: store, name: name}
 }
 
-func (a *CheckPledge) Execute() error {
+func (a *CheckPledge) Execute() (interface{}, error) {
 
 	a.store.Find(a.name, &a.pledge)
 
@@ -32,7 +32,7 @@ func (a *CheckPledge) Execute() error {
 		FromTime: a.pledge.Started.String(),
 	}
 
-	results, _ := a.store.Query(qry)
+	results, _ := a.store.Query(data.DATA_COLLECTION, qry)
 
 	total := 0.0
 
@@ -42,9 +42,7 @@ func (a *CheckPledge) Execute() error {
 
 	log.Printf("pledge was for %s of %s result is %.1f", a.pledge.Feed, a.pledge.Target, (total / float64(len(results))))
 
-	a.Yay = hasMeetTarget(a.pledge, total)
-
-	return nil
+	return hasMeetTarget(a.pledge, total), nil
 }
 
 // the target value can be a basic condition that we need to

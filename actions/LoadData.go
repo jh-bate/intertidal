@@ -53,7 +53,9 @@ type (
 	}
 )
 
-func LoadDataAction(config []byte) *LoadData {
+func LoadDataAction(calldata interface{}, store data.Store, name string) *LoadData {
+
+	config := calldata.([]byte)
 
 	var jsonCfg loaderConfig
 	if err := json.Unmarshal(config, &jsonCfg); err != nil {
@@ -65,10 +67,10 @@ func LoadDataAction(config []byte) *LoadData {
 	return &LoadData{loader: loader}
 }
 
-func (a *LoadData) Execute() error {
+func (a *LoadData) Execute() (interface{}, error) {
 
 	a.load()
-	return nil
+	return a.Results, nil
 }
 
 func (l *LoadData) load() {

@@ -12,10 +12,13 @@ type (
 	}
 )
 
-func SyncDataAction(source data.Store, target data.Store, name string) *SyncData {
-	return &SyncData{source: source, target: target, name: name}
+func SyncDataAction(calldata interface{}, store data.Store, name string) *SyncData {
+
+	target := calldata.(data.Store)
+
+	return &SyncData{source: store, target: target, name: name}
 }
 
-func (a *SyncData) Execute() error {
-	return a.source.Sync(a.name, a.target)
+func (a *SyncData) Execute() (interface{}, error) {
+	return nil, a.source.Sync(a.name, a.target)
 }
