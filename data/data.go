@@ -1,4 +1,4 @@
-package intertidal
+package data
 
 const (
 	DATA_COLLECTION = "data"

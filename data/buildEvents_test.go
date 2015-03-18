@@ -1,4 +1,4 @@
-package flood
+package data
 
 import (
 	"testing"

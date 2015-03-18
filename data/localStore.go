@@ -1,4 +1,4 @@
-package intertidal
+package data
 
 import (
 	"encoding/json"
@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	USR_COLLECTION = "user"
-	storeName      = "intertidal.db"
+	storeName = "intertidal_v2.db"
 )
 
 type (
@@ -92,6 +91,20 @@ func (ls *LocalStore) Query(qry *Query) (results []map[string]interface{}, err e
 	return doQuery(all, qry), nil
 }
 
+func (ls *LocalStore) Query2(collection string, qry *Query) (results interface{}, err error) {
+	if ls.User.Id == "" {
+		return nil, errors.New(USR_ID_NOTSET)
+	}
+
+	var data []map[string]interface{}
+
+	if err = ls.Find(collection, &data); err != nil {
+		return nil, err
+	}
+
+	return runQuery(data, qry), nil
+}
+
 func (ls *LocalStore) Sync(collection string, with Store) error {
 
 	// get what we have locally
@@ -107,6 +120,37 @@ func (ls *LocalStore) Sync(collection string, with Store) error {
 	}
 	log.Print("Successfully synced")
 	return nil
+}
+
+func runQuery(data []map[string]interface{}, qry *Query) (results []interface{}) {
+
+	var qt time.Time
+
+	if qry.FromTime != "" {
+		qt, _ = time.Parse(time.RFC3339Nano, qry.FromTime)
+	}
+
+	for i := range data {
+		if len(qry.Types) == 0 && qry.FromTime == "" {
+			results = append(results, data[i])
+		} else {
+
+			for t := range qry.Types {
+
+				if qry.FromTime == "" {
+					if data[i]["type"] == qry.Types[t] {
+						results = append(results, data[i])
+					}
+				} else {
+					et, _ := time.Parse(time.RFC3339Nano, data[i]["time"].(string))
+					if et.After(qt) && data[i]["type"] == qry.Types[t] {
+						results = append(results, data[i])
+					}
+				}
+			}
+		}
+	}
+	return results
 }
 
 func doQuery(all []map[string]interface{}, qry *Query) (results []map[string]interface{}) {

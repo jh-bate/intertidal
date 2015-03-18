@@ -1,4 +1,4 @@
-package intertidal
+package data
 
 type (
 	// User
@@ -11,6 +11,8 @@ type (
 )
 
 const (
+	USR_COLLECTION = "user"
+
 	USR_ID_NOTSET   = "The User.Id is required but hasn't been set"
 	USR_NAME_NOTSET = "The User.Name is required but hasn't been set"
 )

@@ -1,9 +1,6 @@
-package intertidal
+package data
 
-import (
-	"fmt"
-	"strings"
-)
+import ()
 
 type (
 	Store interface {
@@ -16,6 +13,7 @@ type (
 		Find(collection string, results interface{}) error
 		//find all data the matches the given query and collection
 		Query(qry *Query) (results []map[string]interface{}, err error)
+		Query2(collection string, qry *Query) (results interface{}, err error)
 		//save the given data to the named collection for the logged in user
 		Save(collection string, data interface{}) error
 		//the named collection in this store with the given store
@@ -31,8 +29,3 @@ type (
 		FromTime string
 	}
 )
-
-func (q *Query) ToString() string {
-	const queryString = "METAQUERY WHERE userid IS %s QUERY TYPE IN %s WHERE time > %s SORT BY time AS Timestamp REVERSED"
-	return fmt.Sprintf(queryString, q.UserId, strings.Join(q.Types, ","), q.FromTime)
-}
