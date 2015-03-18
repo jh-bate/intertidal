@@ -25,6 +25,7 @@ func main() {
 
 	user := &data.User{}
 	str := initStore(user)
+	mgr := actions.CreateActionManager()
 
 	//load flags
 	load := flag.Bool("load", false, "do a data load")
@@ -56,16 +57,9 @@ func main() {
 
 	//loading data
 	if *load {
-		log.Println("loading ...")
-
-		dl := actions.LoadDataAction([]byte(fmt.Sprintf(`{"authToken":"%s"}`, *loadKey)), str, data.DATA_COLLECTION)
-		dl.Execute()
-		log.Printf("loaded [%d] records", len(dl.Results))
+		res, _ := mgr.Execute(actions.ActionTypeLoadData, []byte(fmt.Sprintf(`{"authToken":"%s"}`, *loadKey)), str, data.DATA_COLLECTION)
 		if *save == true {
-			log.Print("saving results ...")
-			dData := actions.AddDataAction(dl.Results, str, data.DATA_COLLECTION)
-			dData.Execute()
-			log.Print("saved results")
+			mgr.Execute(actions.ActionTypeAddData, res, str, data.DATA_COLLECTION)
 		} else {
 			log.Print("asked not to save the results")
 		}
@@ -73,33 +67,20 @@ func main() {
 
 	//add a pledge
 	if *pledge && *query == false {
-		log.Println("adding pledge ...")
 		log.Printf("pledge %v", pledgeData)
-		p := actions.AddPledgeAction(pledgeData, str, data.PLEDGE_COLLECTION)
-		p.Execute()
-		log.Print("added pledge")
+		mgr.Execute(actions.ActionTypeAddPledge, pledgeData, str, data.PLEDGE_COLLECTION)
 	}
 
 	//query a pledge
 	if *pledge && *query {
-		log.Println("querying pledge ...")
-		p := actions.CheckPledgeAction(nil, str, data.PLEDGE_COLLECTION)
-		p.Execute()
-		log.Print("queryed pledge. ")
-		log.Printf("target meet? %t", p.Yay)
+		res, _ := mgr.Execute(actions.ActionTypeCheckPledge, nil, str, data.PLEDGE_COLLECTION)
+		log.Printf("target meet? %t", res)
 	}
 
 	//query
 	if *query && *pledge == false {
-		log.Println("querying ...")
-
-		qry := &data.Query{
-			Types:  []string{"smbg"},
-			UserId: user.Id,
-		}
-		q := actions.QueryDataAction(qry, str, data.DATA_COLLECTION)
-		q.Execute()
-		log.Print("queried.")
-		log.Printf("results? %v", q.Results)
+		qry := &data.Query{Types: []string{"smbg"}, UserId: user.Id}
+		res, _ := mgr.Execute(actions.ActionTypeQueryData, qry, str, data.DATA_COLLECTION)
+		log.Printf("query results? %s", res)
 	}
 }

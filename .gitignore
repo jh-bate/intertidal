@@ -9,3 +9,5 @@ intertidal
 intertidal.db
 
 *.sublime-*
+
+*.db
